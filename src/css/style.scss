@@ -1,0 +1,11 @@
+html, body {
+    height: 100%
+}
+.main-map {
+    position: fixed;
+    z-index: 100;
+    right: 20px;
+    top: 20px;
+    box-shadow: 0 0 30px rgba(255,255,255, 0.2);
+    border-radius: 10px;
+}
