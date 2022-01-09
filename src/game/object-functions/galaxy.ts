@@ -1,4 +1,4 @@
-import { currentUser } from "../../client";
+import { currentUser } from "../client";
 import { GalaxyObjectsI, GalaxyWithoutObjectsI, GalaxyI, IDable } from "../../common/declarations";
 import { canvas } from "../components/canvas";
 import { getImage } from "../images";

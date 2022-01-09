@@ -1,6 +1,6 @@
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { Avatar, Button, List, ListItem, ListItemAvatar, ListItemText } from "@material-ui/core";
-import { GalaxyWithoutObjectsI } from "../../common/declarations";
+import { GalaxyWithoutObjectsI } from "../common/declarations";
 
 export function GalaxyList(p: {
     list: GalaxyWithoutObjectsI[],

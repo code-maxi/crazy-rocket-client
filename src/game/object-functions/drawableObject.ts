@@ -1,5 +1,5 @@
 import { DrawableObjectI } from "../../common/declarations";
-import { getImage, images } from "../images";
+import { getImage } from "../images";
 
 export function drawableObject(o: DrawableObjectI) {
     return {

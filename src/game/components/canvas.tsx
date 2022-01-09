@@ -1,10 +1,7 @@
 import React from "react";
-import { client, currentUser, myUser } from "../../client";
-import { galaxyData, galaxyHelper } from "../helpers/galaxy";
-import { clientRocket } from "../helpers/rocket";
-import { getImage, loadImages } from "../images";
+import { currentUser } from "../client";
+import { galaxyData, galaxyHelper } from "../object-functions/galaxy";
 import { keyListen } from "../keybord";
-import { alertSnackbar } from "./snackbars";
 
 export let canvas: RocketCanvas
 

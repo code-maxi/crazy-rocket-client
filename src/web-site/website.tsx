@@ -1,6 +1,6 @@
 import React from "react";
-import { serverHostname } from "../../client";
-import { GalaxyWithoutObjectsI } from "../../common/declarations";
+import { serverHostname } from "../common/adds";
+import { GalaxyWithoutObjectsI } from "../common/declarations";
 import { GalaxyList } from "./choose-galaxy";
 
 export class WebSite extends React.Component<{}, { list: GalaxyWithoutObjectsI[] }> {
@@ -11,6 +11,7 @@ export class WebSite extends React.Component<{}, { list: GalaxyWithoutObjectsI[]
     }
     galaxiesRequest() {
         const url = serverHostname()
+        console.log('Server-URL: ' + url)
         $.getJSON(url + '/get-galaxies', data => {
             console.log('recieved data:')
             console.log(data)

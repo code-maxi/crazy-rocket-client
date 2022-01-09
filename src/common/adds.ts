@@ -1,3 +1,13 @@
+export function currentHostname() {
+    const url = new URL(window.location.href)
+    const res = url.protocol + '://' + url.hostname
+    return res
+}
+
+export function serverHostname() {
+    return currentHostname()
+}
+
 export function log(who: string, s?: any, sn?: string, dataNewLine?: boolean, seperator?: boolean) {
     console.log(who + ' logs: ' + s ? s : '')
     if (sn) console.log(sn)

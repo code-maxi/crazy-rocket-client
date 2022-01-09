@@ -1,8 +1,7 @@
 import { send } from "process";
-import { client, currentRocket, props } from "../../client";
+import { client, currentRocket, props } from "../client";
 import { GalaxyObjectsI, GalaxyTouchingObjectsI, RocketI } from "../../common/declarations";
 import { Geo, inRange } from "../../common/math";
-import { keys } from "../keybord";
 import { drawableObject } from "./drawableObject";
 import { galaxyData, migrateObjectData } from "./galaxy";
 

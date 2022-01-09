@@ -1,18 +1,9 @@
 // Here the Client-Connection
 
-import { PrintOutlined } from "@material-ui/icons";
-import { GalaxyObjectsI, GalaxyWithoutObjectsI, GalaxyI, SendFormatI, UserPropsI, UserI, RocketI } from "./common/declarations";
-import { mainMap } from "./gui/components/map";
-import { alertSnackbar } from "./gui/components/snackbars";
-import { galaxyData, galaxyHelper, setGalaxiesData, setGalaxyData } from "./gui/helpers/galaxy";
-import { loadImages } from "./gui/images";
-
-export function serverHostname() {
-    const url = new URL(window.location.href)
-    const res = url.protocol + '://' + url.hostname
-    return res
-}
-  
+import { GalaxyWithoutObjectsI, GalaxyI, SendFormatI, UserPropsI, UserI, RocketI } from "../common/declarations";
+import { mainMap } from "./components/map";
+import { alertSnackbar } from "./components/snackbars";
+import { galaxyData, galaxyHelper, setGalaxiesData, setGalaxyData } from "./object-functions/galaxy";
 
 export let props: UserPropsI = {
     id: 0,

@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { RocketCanvas } from './gui/components/canvas';
 import './css/style.css'
-import { SnackbarContainer } from './gui/components/snackbars';
-import { init } from './client';
-import { RocketMap } from './gui/components/map';
+import {
+  BrowserRouter,
+  Routes,
+  Route
+} from "react-router-dom";
+import { WebSite } from './web-site/website';
 
 console.log('client is starting...')
 
@@ -14,7 +16,7 @@ console.log('client is starting...')
 <RocketCanvas />
 */
 
-init()
+//init()
 
 /*ReactDOM.render(
   <React.StrictMode>
@@ -24,7 +26,18 @@ init()
     <RocketMap classes="main-map" width={300} factor={0.5} borderColor="rgba(0,0,0,0)" />
   </React.StrictMode>,
   document.getElementById('root')
-);*/
+)*/
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<WebSite />} />
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>,
+  document.getElementById('root')
+)
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
