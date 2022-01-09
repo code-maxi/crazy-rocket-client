@@ -7,6 +7,13 @@ import { alertSnackbar } from "./gui/components/snackbars";
 import { galaxyData, galaxyHelper, setGalaxiesData, setGalaxyData } from "./gui/helpers/galaxy";
 import { loadImages } from "./gui/images";
 
+export function serverHostname() {
+    const url = new URL(window.location.href)
+    const res = url.protocol + '://' + url.hostname
+    return res
+}
+  
+
 export let props: UserPropsI = {
     id: 0,
     name: 'User ' + Math.random(),
@@ -28,16 +35,16 @@ function initConnection(s: string) {
 }
 
 export function init() {
-    loadImages([
+    /*loadImages([
         'asteroid.png',
         'background1.jpg',
         'background2.jpg',
         'background3.jpg',
         'fire.png',
         'rocket.png'
-    ])
+    ])*/
 
-    initConnection('ws://localhost:1234')
+    initConnection('ws://localhost:1237')
 }
 
 export function playing() { return props.id !== 0 }
@@ -119,16 +126,20 @@ class ClientConnection {
     ]
 
     constructor(server: string) {
+        console.log('WebSocket init...')
         this.server = server
-        this.connection = new WebSocket(this.server, 'crazyrocket')
+        this.connection = new WebSocket(this.server)
+        console.log('WebSocket init 2...')
         this.initSocket(this.connection, false)
+        console.log('WebSocket init 3...')
     }
 
     initSocket(s: WebSocket, reconnecting: boolean) {
         s.onopen = () => {
+            console.log('WebSocket opened...')
+
             if (reconnecting) this.connection.close()
             this.connection = s
-            console.log('WebSocket opened...')
 
             this.send('create new galaxy', {
                 galaxy: {
@@ -142,6 +153,7 @@ class ClientConnection {
             console.error('Websocket Error: ' + e)
         }
         s.onmessage = (m) => {
+            console.log("recieving unknown data: " + m)
             const parse = JSON.parse(m.data)
 
             this.onmessage.forEach(f => {

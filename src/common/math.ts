@@ -80,10 +80,9 @@ export class Geo implements GeoI {
     }
 
 
-    insect(g: Geo, type: 'rect' | 'circle' | 'points', skalar?: number, points?: Vector[]) {
+    insect(g: Geo, type: 'rect' | 'circle', skalar?: number, points?: Vector[]) {
         return type == 'rect' ? this.insectRect(g) : 
-            type === 'circle' ? this.insectCircle(g, skalar) : 
-                insectsPoints(points!, g.pos, skalar!)
+            this.insectCircle(g, skalar)
     }
 
     static fromVector(
