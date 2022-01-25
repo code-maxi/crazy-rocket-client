@@ -4,7 +4,10 @@ import { drawableObject } from "./drawableObject";
 export function asteroidHelper(a: AsteroidI) {
     return {
         paint(g: CanvasRenderingContext2D) {
-            drawableObject(a).paint(g, (gc, drawImage) => {
+            drawableObject({
+                ...a,
+                img: 'asteroid.png'
+            }).paint(g, (gc, drawImage) => {
                 drawImage()
 
                 if (a.live < 1.0) {

@@ -46,6 +46,11 @@ export interface JoinGalaxyI {
     galaxyName: string
 }
 
+export interface GalaxyAdminI {
+    password: string,
+    value?: any
+}
+
 export interface GameSettingsI {
     level: number,
     width: number,

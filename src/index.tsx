@@ -9,6 +9,7 @@ import {
 import { WebSite } from './web-site/website';
 import { RocketCanvas } from './game/components/canvas';
 import { SocketUser } from './game/network/SocketUser';
+import { loadImages } from './game/images';
 
 console.log('client is starting...')
 
@@ -41,13 +42,25 @@ console.log('client is starting...')
   document.getElementById('root')
 )*/
 
-new SocketUser('ws://localhost:1113')
+loadImages([
+    'asteroid.png',
+    'background1.jpg',
+    'background2.jpg',
+    'background3.jpg',
+    'rocket.png',
+    'noimage.png',
+    'fire.png',
+    'booom.png',
+    'map_this_rocket.png'
+])
+
+new SocketUser('ws://localhost:1112/')
 
 ReactDOM.render(
-  <React.StrictMode>
-    <RocketCanvas />
-  </React.StrictMode>,
-  document.getElementById('root')
+    <React.StrictMode>
+        <RocketCanvas />
+    </React.StrictMode>,
+    document.getElementById('root')
 )
 
 

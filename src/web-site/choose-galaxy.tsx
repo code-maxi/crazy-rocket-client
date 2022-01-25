@@ -15,12 +15,12 @@ export function GalaxyList(p: {
             >
                 <ListItemAvatar>
                     <Avatar>
-                        { g.galaxyParams.name.substring(0,1).toUpperCase() }
+                        { g.params.name.substring(0,1).toUpperCase() }
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText 
-                    primary={g.galaxyParams.name} 
-                    secondary={'People: ' + g.users.map(u => u.props.name).join(", ")} 
+                    primary={g.params.name} 
+                    secondary={'People: ' + g.users.map(u => u.name).join(", ")} 
                 />
             </ListItem>)
         }
