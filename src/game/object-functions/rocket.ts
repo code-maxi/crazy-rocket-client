@@ -3,7 +3,7 @@ import { client, currentRocket, props } from "../client";
 import { GalaxyObjectsI, GalaxyTouchingObjectsI, RocketI } from "../../common/declarations";
 import { Geo, inRange } from "../../common/math";
 import { drawableObject } from "./drawableObject";
-import { galaxyData, migrateObjectData } from "./galaxy";
+import { gameData, migrateObjectData } from "./galaxy";
 
 export let clientRocket = {
     sendTouchingObjects() {
@@ -13,7 +13,7 @@ export let clientRocket = {
             let to: GalaxyTouchingObjectsI = {
                 asteroids: []
             }
-            galaxyData.objects.asteroids.forEach(a => {
+            gameData.objects.asteroids.forEach(a => {
                 if ((new Geo(o.geo)).insect(new Geo(a.geo), 'circle')) {
                     to.asteroids.push(a)
                 }
@@ -25,7 +25,7 @@ export let clientRocket = {
 }
 
 export function myRocket() {
-    const result = galaxyData.objects.rockets.find(r => r.id === props.id)
+    const result = gameData.objects.rockets.find(r => r.id === props.id)
     return result ? result : null
 }
 

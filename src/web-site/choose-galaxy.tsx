@@ -1,10 +1,10 @@
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { Avatar, Button, List, ListItem, ListItemAvatar, ListItemText } from "@material-ui/core";
-import { GalaxyWithoutObjectsI } from "../common/declarations";
+import { GalaxyI } from "../common/declarations";
 
 export function GalaxyList(p: {
-    list: GalaxyWithoutObjectsI[],
-    onJoin: (g: GalaxyWithoutObjectsI) => void
+    list: GalaxyI[],
+    onJoin: (g: GalaxyI) => void
 }) {
     return <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
         {
@@ -20,7 +20,7 @@ export function GalaxyList(p: {
                 </ListItemAvatar>
                 <ListItemText 
                     primary={g.galaxyParams.name} 
-                    secondary={'People: ' + g.users.map(u => u.name).join(", ")} 
+                    secondary={'People: ' + g.users.map(u => u.props.name).join(", ")} 
                 />
             </ListItem>)
         }

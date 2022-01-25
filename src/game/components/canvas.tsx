@@ -1,6 +1,6 @@
 import React from "react";
 import { currentUser } from "../client";
-import { galaxyData, galaxyHelper } from "../object-functions/galaxy";
+import { gameData, gameHelper } from "../object-functions/galaxy";
 import { keyListen } from "../keybord";
 
 export let canvas: RocketCanvas
@@ -29,18 +29,18 @@ export class RocketCanvas extends React.Component<{}, {
             g.fillStyle = "black"
             g.fillRect(0.0, 0.0, this.state.width, this.state.height)
 
-            galaxyHelper(galaxyData).paintBackground(g)
+            gameHelper(gameData).paintBackground(g)
             
             g.translate(-currentUser!.view!.eye.x + this.state.width/2.0, -currentUser!.view!.eye.y + this.state.height/2.0)
             g.scale(currentUser!.view!.zoom, currentUser!.view!.zoom)
 
-            galaxyHelper(galaxyData).paintBorders(g)
+            gameHelper(gameData).paintBorders(g)
 
             /*console.log()
             console.log(currentUser!.view!.zoom + ' | ' + currentUser!.view!.eye.x + ' | ' + currentUser!.view!.eye.y)
             console.log()*/
 
-            galaxyHelper(galaxyData).paintObjects(g)
+            gameHelper(gameData).paintObjects(g)
 
             g.restore()
         }

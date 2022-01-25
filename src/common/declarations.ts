@@ -1,6 +1,6 @@
 import { rocketTypes } from "./rocketTypes";
 
-export interface IDable { id: number }
+export interface IDable { id: string }
 export interface DatableI<T> {
     data(): T
 }
@@ -26,25 +26,10 @@ export interface CreateGalaxySettingsI extends GalaxySettingsI {
     reason?: string    
 }
 
-export interface GalaxyObjectsI {
-    asteroids: AsteroidI[]
-    rockets: RocketI[]
-}
-
-export interface GalaxyTouchingObjectsI {
-    asteroids: AsteroidI[]
-}
-
-export interface GalaxyWithoutObjectsI { // data sent to login client
-    users: UserI[]
-    galaxyParams: GalaxySettingsI
-    width: number
-    height: number
-    fps: number | null
-}
-
-export interface GalaxyI extends GalaxyWithoutObjectsI {
-    objects: GalaxyObjectsI
+export interface GalaxyI { // data sent to login client
+    users: UserPropsI[]
+    params: GalaxySettingsI,
+    state: string
 }
 
 export interface UserViewI {
@@ -54,14 +39,27 @@ export interface UserViewI {
 
 export interface UserPropsI extends IDable {
     name: string
-    galaxy: string | null
+    galaxy: string | undefined
 }
 
-export interface UserI {
-    props: UserPropsI
-    view: UserViewI | null
-    keyboard: [string, boolean][]
+export interface GameSettings {
+    level: number,
+    width: number,
+    height: number
 }
+
+export interface ClientGameDataI {
+    galaxy: GalaxyI,
+    settings: GameSettings,
+    objects: TypeObjectI[] // has type member
+}
+
+export interface GameDataForSendingI extends ClientGameDataI {
+    messages: SendFormatI[],
+    fullData: Boolean,
+    userView: UserViewI
+}
+
 
 // Math
 
@@ -73,56 +71,37 @@ export interface VectorI {
 
 export interface GeoI {
     pos: VectorI
-    angle: number
+    ang: number
     width: number
     height: number
-}
-
-export interface GeoImplI {
-    geo: GeoI
 }
 
 // Objects
 
+export interface TypeObjectI extends IDable {
+    type: String,
+}
 
-export interface DrawableObjectI extends GeoImplI, IDable { img: string }
-export interface MovingObjectI extends DrawableObjectI { movingVector: VectorI }
+export interface GeoObjectI extends TypeObjectI {
+    geo: GeoI
+}
 
-export interface AsteroidI extends MovingObjectI {
+//export interface DrawableObjectI extends GeoObjectI { img: string }
+//export interface MovingObjectI extends DrawableObjectI { movingVector: VectorI }
+
+export interface AsteroidI extends GeoObjectI {
     live: number,
     size: number
 }
 
-export interface RocketI extends MovingObjectI {
-    rocketTypeId: rocketTypes
+export interface RocketI extends GeoObjectI {
+    userProps: UserPropsI,
+    fires: RocketFireI[], // !
+    view: UserViewI // !
 }
 
-export interface RocketTypeI {
-    id: rocketTypes
-    fires: RocketFireSettingsI[]
-    acceleratingSpeed: number
-    turningSpeed: number
-    standardZoom: number
-    img: string
-    width: number
-    height: number
-}
-
-export interface RocketFireI extends GeoImplI {
-    on: boolean
-    settings: RocketFireSettingsI
-}
-
-export interface RocketFireSettingsI {
-    dx: number
-    dy: number
-    fireSpeed: number
-
-    startWidth: number
-    plusWidth: number
-
-    startHeight: number
-    plusHeight: number
-
+export interface RocketFireI extends GeoObjectI {
+    on: boolean,
+    geo: GeoI,
     img: string
 }

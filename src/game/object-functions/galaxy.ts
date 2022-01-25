@@ -1,30 +1,29 @@
 import { currentUser } from "../client";
-import { GalaxyObjectsI, GalaxyWithoutObjectsI, GalaxyI, IDable } from "../../common/declarations";
+import { IDable, GameDataForSendingI, ClientGameDataI, TypeObjectI, AsteroidI, RocketI, GalaxyI } from "../../common/declarations";
 import { canvas } from "../components/canvas";
 import { getImage } from "../images";
 import { asteroidHelper } from "./asteriod";
 import { clientRocket, rocketHelper } from "./rocket";
+import { migrateObjectData } from "../../common/adds";
 
-export let galaxiesData: GalaxyWithoutObjectsI[]
-export let galaxyData: GalaxyI
+export let galaxiesData: GalaxyI[]
+export function setGalaxiesData(d: GalaxyI[]) { galaxiesData = d }
 
-export function setGalaxyData(d: GalaxyI) { galaxyData = d }
-export function setGalaxiesData(d: GalaxyWithoutObjectsI[]) { galaxiesData = d }
+export let gameData: ClientGameDataI
 
-export function migrateObjectData<T extends IDable>(arr: T[], migratingArray: T[]) {
-    return arr.map(r => {
-        const replacement = migratingArray.find(o => o.id === r.id)
-        return replacement ? replacement : r
-    }) 
+export function setGameData(d: GameDataForSendingI) {
+    gameData = {
+        settings: d.settings,
+        objects: !d.fullData ? gameHelper(gameData).migrateData(d.objects) : gameData.objects,
+        galaxy: d.galaxy
+    }
 }
 
-export function galaxyHelper(o: GalaxyI) {
+export function gameHelper(sis: ClientGameDataI) {
     return {
-        migrateData(n: GalaxyObjectsI) {
-            let copy = { ...o.objects }
-            copy.rockets = migrateObjectData(copy.rockets, n.rockets)
-            copy.asteroids = migrateObjectData(copy.asteroids, n.asteroids)
-
+        migrateData(n: TypeObjectI[]) {
+            let copy = { ...sis.objects }
+            copy = migrateObjectData(copy, n)
             return copy
         },
 
@@ -33,9 +32,9 @@ export function galaxyHelper(o: GalaxyI) {
             g.lineWidth = 20
             g.beginPath()
             g.moveTo(0,0)
-            g.lineTo(o.width, 0)
-            g.lineTo(o.width, o.height)
-            g.lineTo(0, o.height)
+            g.lineTo(sis.settings.width, 0)
+            g.lineTo(sis.settings.width, sis.settings.height)
+            g.lineTo(0, sis.settings.height)
             g.closePath()
             g.stroke()
         },
@@ -44,8 +43,8 @@ export function galaxyHelper(o: GalaxyI) {
             let x = -currentUser!.view!.eye.x/4.0
             let y = -currentUser!.view!.eye.y/4.0
 
-            let w = o.width/2
-            let h = o.height/2
+            let w = sis.settings.width/2
+            let h = sis.settings.height/2
 
             let xx = x
             let yy = y
@@ -112,8 +111,15 @@ export function galaxyHelper(o: GalaxyI) {
         paintObjects(g: CanvasRenderingContext2D) {
             clientRocket.sendTouchingObjects()
 
-            o.objects.asteroids.forEach(a => asteroidHelper(a).paint(g) )
-            o.objects.rockets.forEach(r => rocketHelper(r).paint(g))
+            sis.objects.forEach(o => {
+                try {
+                    if (o.type == 'asteroid') asteroidHelper(o as AsteroidI).paint(g)
+                    if (o.type == 'rocket') rocketHelper(o as RocketI).paint(g)
+                }
+                catch {
+                    alert('Object ' + JSON.stringify(o) + 'can not be casted.')
+                }
+            })
         }
     }
 }

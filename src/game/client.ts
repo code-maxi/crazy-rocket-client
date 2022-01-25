@@ -1,9 +1,9 @@
 // Here the Client-Connection
 
-import { GalaxyWithoutObjectsI, GalaxyI, SendFormatI, UserPropsI, UserI, RocketI } from "../common/declarations";
+import { GalaxyI, GalaxyI, SendFormatI, UserPropsI, UserI, RocketI } from "../common/declarations";
 import { mainMap } from "./components/map";
 import { alertSnackbar } from "./components/snackbars";
-import { galaxyData, galaxyHelper, setGalaxiesData, setGalaxyData } from "./object-functions/galaxy";
+import { gameData, gameHelper, setGalaxiesData, setGameData } from "./object-functions/galaxy";
 
 export let props: UserPropsI = {
     id: 0,
@@ -15,7 +15,7 @@ export let currentUser: UserI | undefined = undefined
 export let currentRocket: RocketI | undefined = undefined
 
 export function myUser() {
-    const result = galaxyData.users.find(u => u.props.id === props.id)
+    const result = gameData.users.find(u => u.props.id === props.id)
     return result ? result : null
 }
 
@@ -74,9 +74,9 @@ class ClientConnection {
             if (parse.header === 'game data') { // DONE: Server send data!
                 if (parse.value.title === 'only important') {
                     const data = parse.value.content
-                    if (galaxyData) {
-                        galaxyData.objects = galaxyHelper(galaxyData).migrateData(data)
-                        if (data.eye) galaxyData.users = galaxyData.users.map(
+                    if (gameData) {
+                        gameData.objects = gameHelper(gameData).migrateData(data)
+                        if (data.eye) gameData.users = gameData.users.map(
                             u => u.props.id === props.id ? { ...u, view: {
                                 ...u.view,
                                 eye: data.eye
@@ -86,21 +86,21 @@ class ClientConnection {
                 }
                 if (parse.value.title === 'galaxy') {
                     const data = parse.value.content as GalaxyI
-                    setGalaxyData(data)
+                    setGameData(data)
 
                     printOut()
                     console.log('fps: ' + data.fps)
                 }
                 
 
-                currentUser = galaxyData.users.find(u => u.props.id === props.id)
+                currentUser = gameData.users.find(u => u.props.id === props.id)
 
-                currentRocket = currentUser ? galaxyData.objects.rockets.find(
+                currentRocket = currentUser ? gameData.objects.rockets.find(
                     r => r.id === currentUser!.props.id) : undefined
 
                 if (currentUser && currentRocket) mainMap.setState({
                     state: {
-                        galaxy: galaxyData,
+                        galaxy: gameData,
                         eye: currentRocket.geo.pos,
                         colorMarkedRockets: [
                             [ currentUser.props.id, 'yellow', 'white' ]
@@ -110,7 +110,7 @@ class ClientConnection {
             }
 
             if (parse.header === 'galaxies data') {
-                const data = parse.value as GalaxyWithoutObjectsI[]
+                const data = parse.value as GalaxyI[]
                 setGalaxiesData(data)
             }
         }
