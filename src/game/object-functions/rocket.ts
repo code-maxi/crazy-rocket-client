@@ -1,10 +1,7 @@
-import { send } from "process";
-import { client, currentRocket, props } from "../client";
-import { GalaxyObjectsI, GalaxyTouchingObjectsI, RocketI } from "../../common/declarations";
-import { Geo, inRange } from "../../common/math";
+import { RocketI } from "../../common/declarations";
 import { drawableObject } from "./drawableObject";
-import { gameData, migrateObjectData } from "./galaxy";
 
+/*
 export let clientRocket = {
     sendTouchingObjects() {
         const o = currentRocket
@@ -24,15 +21,20 @@ export let clientRocket = {
     }
 }
 
+
 export function myRocket() {
     const result = gameData.objects.rockets.find(r => r.id === props.id)
     return result ? result : null
 }
+*/
 
 export function rocketHelper(o: RocketI) {
     return {
         paint(g: CanvasRenderingContext2D) {
-            drawableObject(o).paint(g)
+            drawableObject({
+                ...o,
+                img: 'rocket.png'
+            }).paint(g)
         }
     }
 }

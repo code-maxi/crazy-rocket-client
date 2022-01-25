@@ -9,11 +9,11 @@ export function drawableObject(o: DrawableObjectI) {
         ) {
             g.save()
             g.translate(o.geo.pos.x, o.geo.pos.y)
-            g.rotate(o.geo.angle)
+            g.rotate(o.geo.ang)
 
             const di = () => {
                 g.drawImage(
-                    getImage(o.img)!,
+                    getImage(o.img),
                     -o.geo.width/2.0, -o.geo.height/2.0,
                     o.geo.width, o.geo.height
                 )

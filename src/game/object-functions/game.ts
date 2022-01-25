@@ -1,9 +1,8 @@
-import { currentUser } from "../client";
-import { IDable, GameDataForSendingI, ClientGameDataI, TypeObjectI, AsteroidI, RocketI, GalaxyI } from "../../common/declarations";
+import { GameDataForSendingI, ClientGameDataI, TypeObjectI, AsteroidI, RocketI, GalaxyI, VectorI } from "../../common/declarations";
 import { canvas } from "../components/canvas";
 import { getImage } from "../images";
 import { asteroidHelper } from "./asteriod";
-import { clientRocket, rocketHelper } from "./rocket";
+import { rocketHelper } from "./rocket";
 import { migrateObjectData } from "../../common/adds";
 
 export let galaxiesData: GalaxyI[]
@@ -12,9 +11,10 @@ export function setGalaxiesData(d: GalaxyI[]) { galaxiesData = d }
 export let gameData: ClientGameDataI
 
 export function setGameData(d: GameDataForSendingI) {
+    const objects = !d.fullData ? gameHelper(gameData).migrateData(d.objects) : gameData.objects
     gameData = {
         settings: d.settings,
-        objects: !d.fullData ? gameHelper(gameData).migrateData(d.objects) : gameData.objects,
+        objects: objects,
         galaxy: d.galaxy
     }
 }
@@ -39,9 +39,9 @@ export function gameHelper(sis: ClientGameDataI) {
             g.stroke()
         },
 
-        paintBackground(g: CanvasRenderingContext2D) {
-            let x = -currentUser!.view!.eye.x/4.0
-            let y = -currentUser!.view!.eye.y/4.0
+        paintBackground(g: CanvasRenderingContext2D, eye: VectorI) {
+            let x = -eye.x/4.0
+            let y = -eye.y/4.0
 
             let w = sis.settings.width/2
             let h = sis.settings.height/2
@@ -109,12 +109,20 @@ export function gameHelper(sis: ClientGameDataI) {
         },
 
         paintObjects(g: CanvasRenderingContext2D) {
-            clientRocket.sendTouchingObjects()
+            this.forEachObjects(
+                r => rocketHelper(r).paint(g),
+                a => asteroidHelper(a).paint(g)
+            )
+        },
 
-            sis.objects.forEach(o => {
+        forEachObjects(
+            rocketsF: (r: RocketI) => void,
+            asteriodF: (a: AsteroidI) => void
+        ) {
+            gameData.objects.forEach(o => {
                 try {
-                    if (o.type == 'asteroid') asteroidHelper(o as AsteroidI).paint(g)
-                    if (o.type == 'rocket') rocketHelper(o as RocketI).paint(g)
+                    if (o.type == 'asteroid') asteriodF(o as AsteroidI)
+                    if (o.type == 'rocket') rocketsF(o as RocketI)
                 }
                 catch {
                     alert('Object ' + JSON.stringify(o) + 'can not be casted.')

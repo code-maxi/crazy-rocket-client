@@ -34,19 +34,19 @@ export class Vector implements VectorI, DatableI<VectorI> {
 
 export class Geo implements GeoI {
     pos: Vector
-    angle: number
+    ang: number
     width: number
     height: number
 
     constructor(g?: GeoI) {
         if (g !== undefined) {
             this.pos = Vector.fromData(g.pos)
-            this.angle = g.angle
+            this.ang = g.ang
             this.width = g.width
             this.height = g.height
         } else {
             this.pos = new Vector(0,0)
-            this.angle = 0
+            this.ang = 0
             this.width = 0
             this.height = 0
         }
@@ -62,7 +62,7 @@ export class Geo implements GeoI {
             pos: this.pos.data(),
             width: this.width,
             height: this.height,
-            angle: this.angle
+            angle: this.ang
         }
     }
 
@@ -99,7 +99,7 @@ export class Geo implements GeoI {
             )),
             width: width,
             height: height,
-            angle: 0
+            ang: 0
         })
     }
 }
@@ -108,22 +108,44 @@ export function vec(x: number, y: number): VectorI {
     return { x: x, y: y }
 }
 
+    
 export const V = {
-    plus(v1: VectorI, v2: VectorI)  { return vec(v1.x + v2.x, v1.y + v2.y) },
-    minus(v1: VectorI, v2: VectorI) { return vec(v1.x - v2.x,  v1.y - v2.y) },
-    mul(v1: VectorI, s: number)     { return vec(v1.x * s,  v1.y * s) },
-    div(v1: VectorI, s: number)     { return vec(v1.x / s,  v1.y / s) },
-
-    nRight(vv: VectorI) { return vec(vv.y, vv.x) },
-    l(vv: VectorI) { return Math.sqrt(vv.x*vv.x + vv.y*vv.y) },
-    a(vv: VectorI) { return Math.atan2(vv.y, vv.x) },
-    e(vv: VectorI) { return V.div(vv, V.l(vv)) },
-
-    negate(v: VectorI) { return vec(-v.x, -v.x) },
-    mulSkalar(v1: VectorI, v2: VectorI): number { return v1.x * v2.x + v1.y * v2.y },
-    between(v1: VectorI, v2: VectorI) { return Math.acos(V.mulSkalar(v1, v2) / (V.l(v1) * V.l(v2))) },
-
-    difference(a: VectorI, b: VectorI) { return V.minus(b, a) },
+    zero(): VectorI { return {x:0,y:0} },
+    mul(a: VectorI, s: number): VectorI { return { x: a.x*s, y: a.y*s } },
+    mulVec(a: VectorI, b: VectorI): VectorI { return { x: a.x*b.x, y: a.y*b.y } },
+    divVec(a: VectorI, b: VectorI): VectorI { return { x: a.x/b.x, y: a.y/b.y } },
+    delta(a: VectorI, b: VectorI): VectorI { return { x: b.x-a.x, y: b.y-a.y } },
+    length(v: VectorI): number { return Math.sqrt(v.x*v.x + v.y*v.y) },
+    distance(a: VectorI, b: VectorI) { return this.length(this.delta(a,b)) },
+    equals(a: VectorI, b: VectorI) { return a.x === b.x && a.y == b.y },
+    add(a: VectorI, b: VectorI): VectorI { return { x: a.x + b.x, y: a.y + b.y } },
+    addAll(v: VectorI[]) {
+        let sum = this.zero()
+        v.forEach(i => sum = this.add(sum, i))
+        return sum
+    },
+    subToNull(a: VectorI, b: VectorI) {
+        return this.add(
+            a,
+            this.vec(
+                a.x > 0 ? -b.x : b.x,
+                a.y > 0 ? -b.y : b.y
+            )
+        )
+    },
+    half(v: VectorI) { return this.mul(v, 0.5) },
+    sub(a: VectorI, b: VectorI): VectorI { return { x: a.x - b.x, y: a.y - b.y } },
+    normalRight(v: VectorI): VectorI { return { x: v.y, y: -v.x } },
+    e(v: VectorI): VectorI { return this.mul(v, 1/this.length(v)) },
+    square(a: number): VectorI { return { x:a,y:a } },
+    scalarProduct(a: VectorI, b: VectorI) { return a.x*b.x + a.y*b.y },
+    abs(v: VectorI): VectorI { return { x: Math.abs(v.x), y: Math.abs(v.y) } },
+    vec(x: number, y: number): VectorI { return { x: x, y: y } },
+    trunc(v: VectorI): VectorI { return { x: Math.trunc(v.x), y: Math.trunc(v.y) } },
+    includesPoint(point: VectorI, pos: VectorI, size: VectorI) {
+        const pos2 = this.add(pos, size)
+        return point.x >= pos.x && point.y >= pos.y && point.x <= pos2.x && point.y <= pos2.y
+    },
     al(a: number, l: number) { return vec(Math.cos(a) * l, Math.sin(a) * l) }
 }
 
@@ -151,8 +173,7 @@ export const G = {
         }
 
         const insectCircle = (skalar?: number) => {
-            return V.l(V.difference(g2.pos, g1.pos)) < 
-              (G.longestEdge(g1) + G.longestEdge(g2)) * (skalar ? skalar : 1)
+            return V.length(V.delta(g2.pos, g1.pos)) < (G.longestEdge(g1) + G.longestEdge(g2)) * (skalar ? skalar : 1)
         }
 
         return type == 'rect' ? insectRect(skalar) : insectCircle(skalar)
@@ -172,7 +193,7 @@ export const G = {
             )),
             width: width,
             height: height,
-            angle: 0
+            ang: 0
         })
     }
 }

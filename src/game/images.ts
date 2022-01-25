@@ -2,8 +2,7 @@ export let images: [string, HTMLImageElement][] = []
 
 export function getImage(s: string) {
     const i = images.find(o => o[0] === s)
-    if (i === undefined) console.error('The image ' + s + ' isn\'t aviable!')
-    return i ? i[1] : undefined
+    return i ? i[1] : images.find(o => o[0] === 'noimage.png')![1]
 }
 
 export function loadImages(s: string[]) {
@@ -16,5 +15,4 @@ export function loadImages(s: string[]) {
 
     console.log('images: ')
     images.forEach(i => console.log(i))
-    
 }

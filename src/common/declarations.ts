@@ -1,5 +1,3 @@
-import { rocketTypes } from "./rocketTypes";
-
 export interface IDable { id: string }
 export interface DatableI<T> {
     data(): T
@@ -42,7 +40,13 @@ export interface UserPropsI extends IDable {
     galaxy: string | undefined
 }
 
-export interface GameSettings {
+export interface JoinGalaxyI {
+    userName: string,
+    screenSize: VectorI,
+    galaxyName: string
+}
+
+export interface GameSettingsI {
     level: number,
     width: number,
     height: number
@@ -50,8 +54,17 @@ export interface GameSettings {
 
 export interface ClientGameDataI {
     galaxy: GalaxyI,
-    settings: GameSettings,
+    settings: GameSettingsI,
     objects: TypeObjectI[] // has type member
+}
+
+export interface ClientKeyboardI {
+    keys: ClientKeyI[]
+}
+
+export interface ClientKeyI {
+    key: string,
+    active: boolean
 }
 
 export interface GameDataForSendingI extends ClientGameDataI {
@@ -86,7 +99,7 @@ export interface GeoObjectI extends TypeObjectI {
     geo: GeoI
 }
 
-//export interface DrawableObjectI extends GeoObjectI { img: string }
+export interface DrawableObjectI extends GeoObjectI { img: string }
 //export interface MovingObjectI extends DrawableObjectI { movingVector: VectorI }
 
 export interface AsteroidI extends GeoObjectI {

@@ -1,22 +1,44 @@
-import { GalaxyI, GameDataForSendingI, SendFormatI, UserPropsI } from "../../common/declarations"
-import { setGameData } from "../object-functions/galaxy"
+import { assert } from "console"
+import { ClientKeyboardI, GameDataForSendingI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI } from "../../common/declarations"
+import { V } from "../../common/math"
+import { canvas } from "../components/canvas"
+import { keyListeners, keys } from "../keybord"
+import { setGameData } from "../object-functions/game"
+
+export let socketUser: SocketUser
 
 export class SocketUser {
-    server: string
+    serverUrl: string
     private connection: WebSocket
+    userView?: UserViewI
 
     props: UserPropsI = {
-        id: 0,
+        id: '0',
         name: 'UNNAMED',
         galaxy: undefined
     }
 
-    constructor(server: string) {
+    constructor(url: string) {
         console.log('WebSocket init...')
-        this.server = server
-        this.connection = new WebSocket(this.server)
+
+        this.serverUrl = url
+        this.connection = new WebSocket(this.serverUrl)
+
         console.log('WebSocket init 2...')
+
         this.initSocket(this.connection, false)
+
+        keyListeners.push(() => {
+            let ka: [string, boolean][] = []
+            keys.forEach((v, k) => ka.push([k, v]))
+            const keyboard: ClientKeyboardI = {
+                keys: ka.map(k => ({ key: k[0], active: k[1] }))
+            }
+            socketUser.send('keyboard-data', keyboard) // DONE: Server react on keyboard data!
+        })
+
+        socketUser = this
+
         console.log('WebSocket init 3...')
     }
 
@@ -27,13 +49,7 @@ export class SocketUser {
             if (reconnecting) this.connection.close()
             this.connection = s
 
-            this.send('create new galaxy', {
-                galaxy: {
-                    name: props.galaxy,
-                    password: 'abcdefg'
-                },
-                reason: 'joining it'
-            })
+            this.joinGalaxy('galaxy1')
         }
         s.onerror = (e) => {
             console.error('Websocket Error: ' + e)
@@ -46,6 +62,15 @@ export class SocketUser {
                 this.onMessage(parse)
             }
         }
+    }
+
+    joinGalaxy(galaxy: string) {
+        const join: JoinGalaxyI = {
+            userName: 'guru',
+            screenSize: V.vec(window.innerWidth, window.innerHeight),
+            galaxyName: galaxy
+        }
+        this.send('join-galaxy', join)
     }
 
     onMessage(parse: SendFormatI) {
@@ -78,41 +103,29 @@ export class SocketUser {
         if (parse.header === 'game-data') { // DONE: Server send data!
             const data = parse.value as GameDataForSendingI
 
+            this.userView = data.userView
+
+            const myProps = data.galaxy.users.find(u => u.id == this.props.id)!
+            assert(myProps !== null)
+            this.props = myProps
+
             setGameData(data)
             printOut()
 
-            currentUser = galaxyData.users.find(u => u.props.id === props.id)
-
-            currentRocket = currentUser ? galaxyData.objects.rockets.find(
-                r => r.id === currentUser!.props.id) : undefined
-
-            if (currentUser && currentRocket) mainMap.setState({
-                state: {
-                    galaxy: galaxyData,
-                    eye: currentRocket.geo.pos,
-                    colorMarkedRockets: [
-                        [ currentUser.props.id, 'yellow', 'white' ]
-                    ]
-                }
-            })
+            canvas.paint()
 
             data.messages.forEach(e => this.onMessage(e))
-        }
-
-        if (parse.header === 'galaxies data') {
-            const data = parse.value as GalaxyWithoutObjectsI[]
-            setGalaxiesData(data)
         }
     }
 
     log(s: any) {
-        console.log('Client [' + props.name + ']: ' + s)
+        console.log('Client [' + this.props.name + ']: ' + s)
     }
 
     reconnect(s: string) { this.initSocket(new WebSocket(s), true) }
 
     send(h: string, v: any, quiet?: boolean) {
-        if (quiet !== true) {
+        if (quiet !== true || true) {
             this.log('sends following data...')
             console.log({
                 header: h,

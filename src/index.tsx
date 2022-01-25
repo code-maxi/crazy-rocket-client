@@ -7,6 +7,8 @@ import {
   Route
 } from "react-router-dom";
 import { WebSite } from './web-site/website';
+import { RocketCanvas } from './game/components/canvas';
+import { SocketUser } from './game/network/SocketUser';
 
 console.log('client is starting...')
 
@@ -28,7 +30,7 @@ console.log('client is starting...')
   document.getElementById('root')
 )*/
 
-ReactDOM.render(
+/*ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
@@ -37,7 +39,18 @@ ReactDOM.render(
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
+)*/
+
+new SocketUser('ws://localhost:1113')
+
+ReactDOM.render(
+  <React.StrictMode>
+    <RocketCanvas />
+  </React.StrictMode>,
+  document.getElementById('root')
 )
+
+
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
