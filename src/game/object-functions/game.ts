@@ -8,10 +8,10 @@ import { migrateObjectData } from "../../common/adds";
 export let galaxiesData: GalaxyI[]
 export function setGalaxiesData(d: GalaxyI[]) { galaxiesData = d }
 
-export let gameData: ClientGameDataI
+export let gameData: ClientGameDataI | undefined = undefined
 
 export function setGameData(d: GameDataForSendingI) {
-    const objects = !d.fullData ? gameHelper(gameData).migrateData(d.objects) : gameData.objects
+    const objects = gameData && !d.fullData ? gameHelper(gameData).migrateData(d.objects) : d.objects
     gameData = {
         settings: d.settings,
         objects: objects,
@@ -119,7 +119,7 @@ export function gameHelper(sis: ClientGameDataI) {
             rocketsF: (r: RocketI) => void,
             asteriodF: (a: AsteroidI) => void
         ) {
-            gameData.objects.forEach(o => {
+            gameData!.objects.forEach(o => {
                 try {
                     if (o.type == 'asteroid') asteriodF(o as AsteroidI)
                     if (o.type == 'rocket') rocketsF(o as RocketI)

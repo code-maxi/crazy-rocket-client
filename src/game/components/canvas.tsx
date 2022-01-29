@@ -36,10 +36,12 @@ export class RocketCanvas extends React.Component<{}, {
         const canvasHeight = this.state.height
         const canvasSize = V.vec(canvasWidth, canvasHeight)
 
+        console.log('paint canvas!')
+
         g.fillStyle = "black"
         g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)
 
-        if (socketUser && socketUser.userView) {
+        if (gameData && socketUser && socketUser.userView) {
             const gameObject = gameHelper(gameData)
 
             g.save()

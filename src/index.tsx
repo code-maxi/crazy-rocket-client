@@ -41,6 +41,7 @@ console.log('client is starting...')
   </React.StrictMode>,
   document.getElementById('root')
 )*/
+//test
 
 loadImages([
     'asteroid.png',
@@ -54,7 +55,7 @@ loadImages([
     'map_this_rocket.png'
 ])
 
-new SocketUser('ws://localhost:1112/')
+new SocketUser('ws://localhost:1116/')
 
 ReactDOM.render(
     <React.StrictMode>

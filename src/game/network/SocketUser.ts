@@ -2,20 +2,20 @@ import { ClientKeyboardI, GalaxyAdminI, GameDataForSendingI, JoinGalaxyI, SendFo
 import { V } from "../../common/math"
 import { canvas } from "../components/canvas"
 import { keyListeners, keys } from "../keybord"
-import { setGameData } from "../object-functions/game"
+import { gameData, setGameData } from "../object-functions/game"
 
 export let socketUser: SocketUser
 
 export class SocketUser {
     serverUrl: string
     private connection?: WebSocket
-    userView?: UserViewI
+    userView: UserViewI | null = null
     connected = false
 
     props: UserPropsI = {
         id: '0',
         name: 'UNNAMED',
-        galaxy: undefined
+        galaxy: null
     }
 
     constructor(url: string) {
@@ -63,7 +63,7 @@ export class SocketUser {
 
             console.log('WebSocket initialized and opened 1.')
 
-            this.joinGalaxy('galaxy1')
+            this.joinGalaxy('jonas')
         }
         s.onerror = (e) => {
             console.error('Websocket Error: ' + e.target)
@@ -80,26 +80,29 @@ export class SocketUser {
 
     joinGalaxy(galaxy: string) {
         const join: JoinGalaxyI = {
-            userName: 'guru',
+            userName: 'jonas',
             screenSize: V.vec(window.innerWidth, window.innerHeight),
             galaxyName: galaxy
         }
         this.send('join-galaxy', join)
     }
 
-    onMessage(parse: SendFormatI) {
+    onMessage(parse: SendFormatI, fromGameData?: boolean) {
         const printOut = () => {
-            this.log('recieving following data...')
-            console.log(parse)
+            this.log('recieving [' + parse.header + '] with following value...')
+            console.log(parse.value)
             console.log()
         }
 
+        printOut()
+
         if (parse.header === 'join-galaxy-result') { // one's joined a game
             // Response Result
+
             if (parse.value.successfully) {
                 alert('successfully joined!')
 
-                const password:  GalaxyAdminI = { password: 'wrong!' }
+                const password:  GalaxyAdminI = { password: 'jonasp', value: null }
                 this.send('start-game', password)
             }
             else {
@@ -118,6 +121,8 @@ export class SocketUser {
         }
 
         if (parse.header === 'game-data') { // DONE: Server send data!
+            printOut()
+
             const data = parse.value as GameDataForSendingI
 
             this.userView = data.userView
@@ -126,11 +131,12 @@ export class SocketUser {
             if (myProps !== null) this.props = myProps
 
             setGameData(data)
-            printOut()
 
             canvas.paint()
 
-            data.messages.forEach(e => this.onMessage(e))
+            data.messages.forEach(e => this.onMessage(e, true))
+
+            console.log(gameData)
         }
     }
 

@@ -14,9 +14,7 @@ export interface SendFormatI {
 // Galaxy and User
 
 export interface GalaxySettingsI {
-    name: string
-    password: string
-    passwordJoin?: boolean
+    name: string,
     level: number
 }
 
@@ -37,7 +35,7 @@ export interface UserViewI {
 
 export interface UserPropsI extends IDable {
     name: string
-    galaxy: string | undefined
+    galaxy: string | null
 }
 
 export interface JoinGalaxyI {
@@ -48,7 +46,7 @@ export interface JoinGalaxyI {
 
 export interface GalaxyAdminI {
     password: string,
-    value?: any
+    value: any
 }
 
 export interface GameSettingsI {
@@ -63,6 +61,13 @@ export interface ClientGameDataI {
     objects: TypeObjectI[] // has type member
 }
 
+export interface GameDataForSendingI extends ClientGameDataI {
+    messages: SendFormatI[],
+    fullData: Boolean,
+    userView: UserViewI | null
+}
+
+
 export interface ClientKeyboardI {
     keys: ClientKeyI[]
 }
@@ -71,13 +76,6 @@ export interface ClientKeyI {
     key: string,
     active: boolean
 }
-
-export interface GameDataForSendingI extends ClientGameDataI {
-    messages: SendFormatI[],
-    fullData: Boolean,
-    userView: UserViewI
-}
-
 
 // Math
 
