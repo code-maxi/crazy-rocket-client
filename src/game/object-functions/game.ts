@@ -22,9 +22,10 @@ export function setGameData(d: GameDataForSendingI) {
 export function gameHelper(sis: ClientGameDataI) {
     return {
         migrateData(n: TypeObjectI[]) {
-            let copy = { ...sis.objects }
-            copy = migrateObjectData(copy, n)
-            return copy
+            return [ ...sis.objects ].map(o => {
+                const replacement = n.find(np => np.id === o.id)
+                return replacement ? replacement : o
+            })
         },
 
         paintBorders(g: CanvasRenderingContext2D) {

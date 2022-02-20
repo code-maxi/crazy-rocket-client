@@ -33,8 +33,13 @@ export function rocketHelper(o: RocketI) {
         paint(g: CanvasRenderingContext2D) {
             drawableObject({
                 ...o,
-                img: 'rocket.png'
-            }).paint(g)
+                img: o.style.img
+            }).paint(g, (gc, di) => {
+                di()
+                o.style.fires.forEach(fire => {
+                    drawableObject(fire).paint(gc)
+                })
+            })
         }
     }
 }

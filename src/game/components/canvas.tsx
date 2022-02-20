@@ -36,8 +36,6 @@ export class RocketCanvas extends React.Component<{}, {
         const canvasHeight = this.state.height
         const canvasSize = V.vec(canvasWidth, canvasHeight)
 
-        console.log('paint canvas!')
-
         g.fillStyle = "black"
         g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)
 

@@ -1,7 +1,5 @@
-import { filledInputClasses } from "@material-ui/core";
-import React from "react";
-import { ClientGameDataI, GalaxyI, GalaxySettingsI, GameSettingsI, VectorI } from "../../common/declarations";
-import { V } from "../../common/math";
+import { ClientGameDataI, VectorI } from "../../common/declarations";
+import { G, V } from "../../common/math";
 import { gameHelper } from "../object-functions/game";
 
 export interface MapConfig {
@@ -136,18 +134,26 @@ export function rocketMapHelper(config: MapConfig, state: MapState) {
                 const gameW = s.gameData.settings.width
                 const gameH = s.gameData.settings.height
 
-                const height = config.width / gameW * gameH
+                const configHeight = config.width / gameW * gameH
 
                 const t = V.mulVec(canvasSize, config.position ? config.position : V.zero())
                 gc.translate(t.x, t.y)
 
-                gc.clearRect(0, 0, config.width, height)
-
                 gc.fillStyle = config.backgroundColor ? config.backgroundColor : 'rgba(0,0,0,0.4)'
-                gc.fillRect(0, 0, config.width, height)
+                
+                gc.rect(0, 0, config.width, configHeight)
+                gc.fill()
+                
                 gc.lineWidth = 1
                 gc.strokeStyle = config.borderColor ? config.borderColor : 'white'
-                gc.strokeRect(0, 0, config.width, height)
+
+                gc.rect(0, 0, config.width, configHeight)
+                gc.stroke()
+
+                gc.save()
+
+                gc.rect(0, 0, config.width, configHeight)
+                gc.clip()
 
                 gc.save()
 
@@ -168,7 +174,7 @@ export function rocketMapHelper(config: MapConfig, state: MapState) {
                 const mapp = 30
 
                 const tx = (s.eye.x / gameW)  * (wholeMapSize[0] - config.width + mapp*2) - mapp
-                const ty = (s.eye.y / gameH) * (wholeMapSize[1] - height      + mapp*2) - mapp
+                const ty = (s.eye.y / gameH) * (wholeMapSize[1] - configHeight      + mapp*2) - mapp
 
                 if (config.factor !== 1) gc.translate(-tx, -ty)
 
@@ -217,6 +223,8 @@ export function rocketMapHelper(config: MapConfig, state: MapState) {
                         }
                     }
                 )
+
+                gc.restore()
 
                 gc.restore()
 

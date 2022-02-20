@@ -1,13 +1,11 @@
 import { socketUser } from "./network/SocketUser"
 
-export const keys = new Map<string, boolean>([
-    ['ArrowUp', false],
-    ['ArrowLeft', false],
-    ['ArrowRight', false],
-    ['Space', false],
-    ['KeyL', false],
-    ['KeyC', false]
-])
+export const keys = new Map<string, boolean>()
+export function keysArray() {
+    let ka: { key: string, active: boolean }[] = []
+    keys.forEach((v, k) => ka.push({ key: k, active: v }))
+    return ka
+}
 
 export let keyListeners: ((e: KeyboardEvent, b: boolean) => void)[] = [
     (e, b) => {

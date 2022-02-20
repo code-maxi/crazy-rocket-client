@@ -58,13 +58,14 @@ export interface GameSettingsI {
 export interface ClientGameDataI {
     galaxy: GalaxyI,
     settings: GameSettingsI,
-    objects: TypeObjectI[] // has type member
+    objects: TypeObjectI[] // has type member,
 }
 
 export interface GameDataForSendingI extends ClientGameDataI {
     messages: SendFormatI[],
     fullData: Boolean,
-    userView: UserViewI | null
+    userView: UserViewI | null,
+    yourUserProps: UserPropsI
 }
 
 
@@ -95,7 +96,7 @@ export interface GeoI {
 // Objects
 
 export interface TypeObjectI extends IDable {
-    type: String,
+    type: String
 }
 
 export interface GeoObjectI extends TypeObjectI {
@@ -112,12 +113,40 @@ export interface AsteroidI extends GeoObjectI {
 
 export interface RocketI extends GeoObjectI {
     userProps: UserPropsI,
-    fires: RocketFireI[], // !
+    style: RocketStyleI,
     view: UserViewI // !
+}
+
+export interface RocketStyleI {
+    img: string,
+    fires: RocketFireI[]
 }
 
 export interface RocketFireI extends GeoObjectI {
     on: boolean,
     geo: GeoI,
     img: string
+}
+
+export interface ResponseResult {
+    successfully: Boolean
+    data: any | null
+    message: string | null
+    errorType: string | null
+}
+
+export interface GameStartI {
+    listeningKeys: string[]
+}
+
+export interface ClientMouseI {
+    pos: VectorI,
+    pressed: Boolean
+}
+
+export interface ClientRequestI {
+    userProps: UserPropsI,
+    keyboard: ClientKeyboardI | null,
+    mouse: ClientMouseI | null,
+    messages: SendFormatI[] | null
 }

@@ -55,7 +55,7 @@ loadImages([
     'map_this_rocket.png'
 ])
 
-new SocketUser('ws://localhost:1116/')
+new SocketUser('ws://localhost:1234/socket')
 
 ReactDOM.render(
     <React.StrictMode>

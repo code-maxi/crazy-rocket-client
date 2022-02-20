@@ -42,8 +42,8 @@ export class Listener<T> {
 }
 
 export function migrateObjectData<T extends IDable>(arr: T[], migratingArray: T[]) {
-    return arr.map(r => {
+    return arr.map((r: T) => {
         const replacement = migratingArray.find(o => o.id === r.id)
         return replacement ? replacement : r
-    }) 
+    })
 }
