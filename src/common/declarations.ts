@@ -22,11 +22,15 @@ export interface CreateGalaxySettingsI extends GalaxySettingsI {
     reason?: string    
 }
 
+export type GalaxyStateT = 'frozen' | 'queue' |  'running'
+
 export interface GalaxyI { // data sent to login client
     users: UserPropsI[]
-    params: GalaxySettingsI,
-    state: string
+    params: GalaxySettingsI
+    state: GalaxyStateT
 }
+
+// user view
 
 export interface UserViewI {
     eye: VectorI
@@ -149,4 +153,13 @@ export interface ClientRequestI {
     keyboard: ClientKeyboardI | null,
     mouse: ClientMouseI | null,
     messages: SendFormatI[] | null
+}
+
+export type RocketTeamColorT = "blue" | "red" | "green" | "yellow"
+
+export interface RocketTeamI {
+    galaxy: string,
+    users: UserPropsI,
+    name: string,
+    color: RocketTeamColorT
 }

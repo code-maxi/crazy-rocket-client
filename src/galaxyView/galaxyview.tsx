@@ -8,5 +8,5 @@ interface GalaxyViewParams {
 }
 
 export class GalaxyView extends React.Component {
-
+    
 }

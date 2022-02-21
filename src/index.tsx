@@ -1,17 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './css/style.css'
+import './css/style.scss'
+
 import {
   BrowserRouter,
   Routes,
   Route
 } from "react-router-dom";
-import { WebSite } from './web-site/website';
 import { RocketCanvas } from './game/components/canvas';
 import { SocketUser } from './game/network/SocketUser';
 import { loadImages } from './game/images';
-
-console.log('client is starting...')
+import { Button, Row } from 'react-bootstrap';
 
 /*
 <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
