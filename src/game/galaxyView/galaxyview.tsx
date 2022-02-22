@@ -99,8 +99,13 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
 
     render(): React.ReactNode {
         const galData = this.state.galaxyData
-        return <Container fluid>
-            <Row className="justify-content-center align-items-center mt-sm-5">
+        return <Container fluid style={{
+            background: 'linear-gradient(40deg, #ae6565, #4f4fee)',
+            height: '100vh',
+            position: 'fixed',
+            overflow: 'auto'
+        }}>
+            <Row className="justify-content-center align-items-center mt-5 mb-5">
             {
                 galData ? <Card style={{
                     width: 'max-content',
@@ -117,8 +122,8 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
                     }} />
 
                     <Card.Body>
-                        <Card.Title>{galData.props.name}</Card.Title>
-                        <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
+                        <Card.Title>{'Galaxy \"' + galData.props.name +"\""}</Card.Title>
+                        <Card.Subtitle className="mb-2 text-muted">{ galData.teams.length + ' Teams, ' + galData.users.length + ' Users, ' + ( galData.props.state === 'queue' ? 'not ran yet' : 'running' ) }</Card.Subtitle>
 
                         <div className="justify-content-center d-flex mb-3">
                             <ButtonGroup className="ml-auto mr-auto mt-2">
@@ -150,7 +155,7 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
                             <InputGroup className="mb-3">
                                 <InputGroup.Text id="basic-addon1">{ BootIcon().USER_ICON }</InputGroup.Text>
                                 <Form.Control
-                                    placeholder="Username"
+                                    placeholder="Your Nickname for the Game..."
                                     aria-label="Username"
                                     aria-describedby="basic-addon1"
                                     onChange={e => {
