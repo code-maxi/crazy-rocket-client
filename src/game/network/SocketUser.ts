@@ -1,10 +1,11 @@
-import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI } from "../../common/declarations"
+import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, Galaxy2I } from "../../common/declarations"
 import { V } from "../../common/math"
 import { canvas } from "../components/canvas"
 import { keyListeners, keys, keysArray } from "../keybord"
-import { gameData, setGameData } from "../object-functions/game"
+import { setGameData } from "../object-functions/game"
 
 export let socketUser: SocketUser
+export function getConnection() { return socketUser }
 
 export class SocketUser {
     serverUrl: string
@@ -13,6 +14,7 @@ export class SocketUser {
     connected = false
     keyBoard: ClientKeyboardI | null = null
     mouse: ClientMouseI | null = null
+    private prevGalaxy?: Galaxy2I
 
     props: UserPropsI = {
         id: '0',
@@ -32,7 +34,6 @@ export class SocketUser {
 
         console.log('UserSocket created.')
     }
-
 
     private connect(url: string) {
         console.log('WebSocket initializing on url "' + url + '"...')
@@ -61,6 +62,10 @@ export class SocketUser {
                 this.onMessage(parse)
             }
         }
+    }
+
+    setPreviewGalaxy(galaxy: string) {
+
     }
 
     joinGalaxy(galaxy: string) {

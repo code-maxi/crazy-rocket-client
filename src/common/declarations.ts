@@ -13,21 +13,54 @@ export interface SendFormatI {
 
 // Galaxy and User
 
+export type GalaxyStateT = 'frozen' | 'queue' |  'running'
+
 export interface GalaxySettingsI {
     name: string,
     level: number
+}
+
+export interface GalaxyConfigI {
+    asteroidSpeed: number,
+    asteroidAmount: number
+}
+
+export interface GalaxyPropsI {
+    name: string,
+    state: GalaxyStateT
+}
+
+export interface GalaxyI { // data sent to login client
+    users: UserPropsI[]
+    params: GalaxySettingsI
+    state: GalaxyStateT
+}
+
+export interface Galaxy2I { // data sent to login client
+    props: GalaxyPropsI,
+    config: GalaxyConfigI,
+    teams: TeamI[],
+    users: UserPropsI[]
 }
 
 export interface CreateGalaxySettingsI extends GalaxySettingsI {
     reason?: string    
 }
 
-export type GalaxyStateT = 'frozen' | 'queue' |  'running'
+// teams
 
-export interface GalaxyI { // data sent to login client
-    users: UserPropsI[]
-    params: GalaxySettingsI
-    state: GalaxyStateT
+export type TeamColorT = 'red' | 'green' | 'blue' | 'yellow'
+
+export interface TeamPropsI {
+    galaxyName: string,
+    name: string,
+    color: TeamColorT,
+    maxUserSize: number
+}
+
+export interface TeamI {
+    props: TeamPropsI,
+    userIds: string[]
 }
 
 // user view
@@ -39,7 +72,8 @@ export interface UserViewI {
 
 export interface UserPropsI extends IDable {
     name: string
-    galaxy: string | null
+    galaxy: string | null,
+    teamName?: string
 }
 
 export interface JoinGalaxyI {

@@ -11,6 +11,7 @@ import { RocketCanvas } from './game/components/canvas';
 import { SocketUser } from './game/network/SocketUser';
 import { loadImages } from './game/images';
 import { Button, Row } from 'react-bootstrap';
+import { GalaxyView } from "./game/galaxyView/galaxyview"
 
 /*
 <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
@@ -42,7 +43,7 @@ import { Button, Row } from 'react-bootstrap';
 )*/
 //test
 
-loadImages([
+/*loadImages([
     'asteroid.png',
     'background1.jpg',
     'background2.jpg',
@@ -52,13 +53,13 @@ loadImages([
     'fire.png',
     'booom.png',
     'map_this_rocket.png'
-])
+])*/
 
 new SocketUser('ws://localhost:1234/socket')
 
 ReactDOM.render(
     <React.StrictMode>
-        <RocketCanvas />
+        <GalaxyView galaxy="galaxy-1" />
     </React.StrictMode>,
     document.getElementById('root')
 )
