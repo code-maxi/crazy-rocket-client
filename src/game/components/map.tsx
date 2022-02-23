@@ -1,5 +1,5 @@
 import { ClientGameDataI, VectorI } from "../../common/declarations";
-import { G, V } from "../../common/math";
+import { V } from "../../common/math";
 import { gameHelper } from "../object-functions/game";
 
 export interface MapConfig {

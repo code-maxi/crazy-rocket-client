@@ -1,9 +1,9 @@
-import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, Galaxy2I, GalaxyPrevI } from "../../common/declarations"
+import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, Galaxy2I, GalaxyPrevI, ClientGameDataI } from "../../common/declarations"
 import { V } from "../../common/math"
-import { canvas } from "../components/canvas"
-import { GalaxyView } from "../galaxyView/galaxyview"
+import { RocketCanvas } from "../components/canvas"
+import { GalaxyLogin } from "../components/galaxy-login"
 import { keyListeners, keys, keysArray } from "../keybord"
-import { setGameData } from "../object-functions/game"
+import { gameHelper } from "../object-functions/game"
 
 export let socketUser: SocketUser
 export function getConnection() { return socketUser }
@@ -11,21 +11,27 @@ export function getConnection() { return socketUser }
 export class SocketUser {
     static instance: SocketUser
 
-    serverUrl: string
+    private serverUrl: string
     private connection?: WebSocket
-    userView: UserViewI | null = null
-    connected = false
-    keyBoard: ClientKeyboardI | null = null
-    mouse: ClientMouseI | null = null
+    private connected = false
 
     private prevGalaxy?: Galaxy2I
     private prevGalaxyName?: string
+
+    private keyBoard: ClientKeyboardI | null = null
+    private mouse: ClientMouseI | null = null
+    
+    private userView: UserViewI | null = null
+    private gameData: ClientGameDataI | null = null
 
     props: UserPropsI = {
         id: '0',
         name: 'UNNAMED',
         galaxy: null
     }
+
+    getUserView() { return this.userView }
+    getGameData() { return this.gameData }
 
     constructor(url: string, prevGalaxyName: string)  {
         this.prevGalaxyName = prevGalaxyName
@@ -79,7 +85,7 @@ export class SocketUser {
         }
 
         if (parse.header === 'join-galaxy-result') { // one's joined a game
-            GalaxyView.instance.setErrorResult(parse.value)
+            GalaxyLogin.instance.setErrorResult(parse.value)
             /*if (parse.value.successfully) {
                 const password:  GalaxyAdminI = { password: 'jonasp', value: null }
                 this.send('start-game', password)
@@ -89,7 +95,7 @@ export class SocketUser {
             }*/
         }
         if (parse.header === 'start-game-result') {
-            GalaxyView.instance.setErrorResult(parse.value)
+            GalaxyLogin.instance.setErrorResult(parse.value)
             /*if (parse.value.successfully) {
                 //alert('successfully game started!')
                 const gs = parse.value.data as GameStartI
@@ -112,10 +118,10 @@ export class SocketUser {
             this.prevGalaxyName = data.galaxy.props.name
             this.props = data.myUser
 
-            GalaxyView.instance.setGalaxyPrev(data)
+            GalaxyLogin.instance.setGalaxyPrev(data)
         }
 
-        if (parse.header === 'game-data') this.recieveData(parse.value)
+        if (parse.header === 'game-data') this.recieveGameData(parse.value)
     }
 
     setPreviewGalaxy(galaxy: string) { this.send('prev-galaxy', { galaxyName: galaxy }) }
@@ -136,7 +142,16 @@ export class SocketUser {
         this.send('join-game', undefined)
     }
 
-    requestData() {
+    private setGameData(d: GameDataForSendingI) {
+        const objects = this.gameData && !d.fullData ? gameHelper(this.gameData).migrateData(d.objects) : d.objects
+        this.gameData = {
+            settings: d.settings,
+            objects: objects,
+            galaxy: d.galaxy
+        }
+    }
+
+    private requestGameData() {
         const request: ClientRequestI = {
             userProps: this.props,
             keyboard: this.keyBoard,
@@ -147,18 +162,18 @@ export class SocketUser {
         this.keyBoard = null
     }
 
-    recieveData(d: any) {
+    private recieveGameData(d: any) {
         const data = d as GameDataForSendingI
             
         this.props = data.yourUserProps
         this.userView = data.userView
-        setGameData(data)
+        this.setGameData(data)
 
         data.messages.forEach(e => this.onMessage(e, true))
 
-        canvas.paint()
+        RocketCanvas.instance.paint()
 
-        this.requestData()
+        this.requestGameData()
     }
 
     log(s: any) {

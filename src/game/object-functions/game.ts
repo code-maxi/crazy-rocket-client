@@ -1,23 +1,7 @@
-import { GameDataForSendingI, ClientGameDataI, TypeObjectI, AsteroidI, RocketI, GalaxyI, VectorI } from "../../common/declarations";
-import { canvas } from "../components/canvas";
+import { ClientGameDataI, TypeObjectI, AsteroidI, RocketI, GalaxyI, VectorI } from "../../common/declarations";
 import { getImage } from "../images";
 import { asteroidHelper } from "./asteriod";
 import { rocketHelper } from "./rocket";
-import { migrateObjectData } from "../../common/adds";
-
-export let galaxiesData: GalaxyI[]
-export function setGalaxiesData(d: GalaxyI[]) { galaxiesData = d }
-
-export let gameData: ClientGameDataI | undefined = undefined
-
-export function setGameData(d: GameDataForSendingI) {
-    const objects = gameData && !d.fullData ? gameHelper(gameData).migrateData(d.objects) : d.objects
-    gameData = {
-        settings: d.settings,
-        objects: objects,
-        galaxy: d.galaxy
-    }
-}
 
 export function gameHelper(sis: ClientGameDataI) {
     return {
@@ -40,7 +24,7 @@ export function gameHelper(sis: ClientGameDataI) {
             g.stroke()
         },
 
-        paintBackground(g: CanvasRenderingContext2D, eye: VectorI) {
+        paintBackground(g: CanvasRenderingContext2D, eye: VectorI, canvasSize: VectorI) {
             let x = -eye.x/4.0
             let y = -eye.y/4.0
 
@@ -90,10 +74,10 @@ export function gameHelper(sis: ClientGameDataI) {
                 )
             }
 
-            const xl = x > 0 && x < canvas.state.width
-            const yt = y > 0 && y < canvas.state.height
-            const xr = x+w > 0 && x+w < canvas.state.width
-            const yb = y+h > 0 && y+h < canvas.state.height
+            const xl = x > 0 && x < canvasSize.x
+            const yt = y > 0 && y < canvasSize.y
+            const xr = x+w > 0 && x+w < canvasSize.x
+            const yb = y+h > 0 && y+h < canvasSize.y
 
             if (xl) di(-w, 0)
             if (yt) di(0, -h)
@@ -116,11 +100,31 @@ export function gameHelper(sis: ClientGameDataI) {
             )
         },
 
+        paintWorld(
+            g: CanvasRenderingContext2D, 
+            eye: VectorI, 
+            zoom: number,
+            canvasSize: VectorI
+        ) {
+            g.save()
+
+            this.paintBackground(g, eye, canvasSize)
+            
+            g.translate(-eye.x + canvasSize.x/2.0, -eye.y + canvasSize.y/2.0)
+            g.scale(zoom, zoom)
+
+            this.paintBorders(g)
+
+            this.paintObjects(g)
+
+            g.restore()
+        },
+
         forEachObjects(
             rocketsF: (r: RocketI) => void,
             asteriodF: (a: AsteroidI) => void
         ) {
-            gameData!.objects.forEach(o => {
+            sis.objects.forEach(o => {
                 try {
                     if (o.type == 'asteroid') asteriodF(o as AsteroidI)
                     if (o.type == 'rocket') rocketsF(o as RocketI)

@@ -1,4 +1,3 @@
-import Feedback from 'react-bootstrap/Feedback'
 import Alert from 'react-bootstrap/Alert'
 import ListGroup from 'react-bootstrap/ListGroup'
 import Form from 'react-bootstrap/Form'
@@ -9,19 +8,14 @@ import Stack from 'react-bootstrap/Stack'
 import Button from 'react-bootstrap/Button'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import { BootIcon } from '../../gui-adds'
 
 import React from "react";
-import { Galaxy2I, GalaxyI, GalaxyPrevI, GalaxyStateT, ResponseResult, RocketTeamColorT, UserPropsI } from "../../common/declarations"
-import { getConnection, SocketUser } from "../network/SocketUser"
+import { Galaxy2I, GalaxyPrevI, GalaxyStateT, ResponseResult, RocketTeamColorT, UserPropsI } from "../../common/declarations"
+import { SocketUser } from "../network/SocketUser"
 import { ButtonGroup, Collapse } from 'react-bootstrap'
 
-interface GalaxyViewParams {
-    noGalaxySpecifyed: boolean
-}
-
-interface GalaxyViewState {
+export interface GalaxyLoginStateI {
     galaxy?: Galaxy2I,
     error?: {
         message: string | null,
@@ -30,7 +24,7 @@ interface GalaxyViewState {
     myUser?: UserPropsI
 }
 
-const exampleGalaxyViewState: GalaxyViewState = {
+const exampleGalaxyViewState: GalaxyLoginStateI = {
     galaxy: {
         props: {
             name: 'test-galaxy',
@@ -93,15 +87,27 @@ const exampleGalaxyViewState: GalaxyViewState = {
     }
 }
 
-export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewState> {
-    static instance: GalaxyView
+export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean }, GalaxyLoginStateI> {
+    static instance: GalaxyLogin
     
     nameValue = ''
 
     constructor(p: any) {
         super(p)
-        this.state = {}
-        GalaxyView.instance = this
+        this.state = {  }
+        GalaxyLogin.instance = this
+    }
+
+    setGalaxyPrev(gp: GalaxyPrevI) {
+        const b1 = JSON.stringify(gp.myUser) !== JSON.stringify(this.state.myUser)
+        const b2 = JSON.stringify(gp.galaxy) !== JSON.stringify(this.state.galaxy)
+        if (b1 || b2) {
+            this.setState({
+                ...this.state,
+                galaxy: gp.galaxy,
+                myUser: gp.myUser
+            })
+        }
     }
 
     setErrorResult(res: ResponseResult) {
@@ -117,18 +123,6 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
             ...this.state,
             error: undefined
         })
-    }
-
-    setGalaxyPrev(gp: GalaxyPrevI) {
-        const b1 = JSON.stringify(gp.myUser) !== JSON.stringify(this.state.myUser)
-        const b2 = JSON.stringify(gp.galaxy) !== JSON.stringify(this.state.galaxy)
-        if (b1 || b2) {
-            this.setState({
-                ...this.state,
-                galaxy: gp.galaxy,
-                myUser: gp.myUser
-            })   
-        }
     }
 
     render(): React.ReactNode {
@@ -176,7 +170,6 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
 
                         <Card.Text>
                             <GalaxyViewTip user={ this.state.myUser } galaxyState={ galData.props.state } galaxyName={ galData.props.name } />
-
                             {
                                 this.state.error && this.state.error.type !== 'invalid-text' ?
                                     <GalaxyViewException message={this.state.error.message} /> : undefined
@@ -187,7 +180,7 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
                             /*this.setState({ ...this.state, myUser: {
                                 id: "3",
                                 name: this.nameValue,
-                                galaxy: this.props.galaxy,
+                                galaxy: this.state.galaxy,
                                 teamName: team
                             }})*/
 
@@ -269,7 +262,7 @@ function RocketTeamList(p: {
                     <Stack direction="horizontal" className="align-items-center" gap={3}>
                         <p className="fs-5 mb-0">{team.props.name}</p>
                         <p className="fs-7 mb-0">{team.userIds.map(id => p.galaxy.users.find(u => u.id == id)?.name).join(", ")}</p>
-                        { !p.joinedTeam ? <Button variant='dark bg-gradient' className='ms-auto' onClick={() => { p.onUserJoin(team) }}>→ Join</Button>
+                        { !p.joinedTeam ? <Button variant='dark bg-gradient' className='ms-auto' onClick={() => { p.onUserJoin(team.props.name) }}>→ Join</Button>
                              : ( team.props.name === p.joinedTeam ? <div className='ms-auto bg-gradient bg-success shadow-sm rounded p-1'>{BootIcon({ button: true }).CHECK} Joined</div> : undefined )
                         }
                     </Stack>

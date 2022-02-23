@@ -2,7 +2,6 @@ import { AlertColor, Button, Slide, Stack } from "@material-ui/core";
 import { Alert, Snackbar } from "@material-ui/core";
 import { TransitionProps } from "@material-ui/core/transitions";
 import React, { ReactElement } from "react";
-import { removeItem } from "../../common/adds";
 
 export let snackbars = new Map<string, SnackbarContainer>()
 

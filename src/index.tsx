@@ -11,7 +11,7 @@ import { RocketCanvas } from './game/components/canvas';
 import { SocketUser } from './game/network/SocketUser';
 import { loadImages } from './game/images';
 import { Button, Row } from 'react-bootstrap';
-import { GalaxyView } from "./game/galaxyView/galaxyview"
+import { GalaxyRootGUI } from "./game/components/root-gui"
 
 /*
 <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
@@ -63,7 +63,7 @@ if (prevGalaxy) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
 ReactDOM.render(
     <React.StrictMode>
-        <GalaxyView noGalaxySpecifyed={ prevGalaxy === undefined } />
+        <GalaxyRootGUI noGalaxySpecifyed={ prevGalaxy === undefined } />
     </React.StrictMode>,
     document.getElementById('root')
 )
