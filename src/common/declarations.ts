@@ -46,6 +46,10 @@ export interface Galaxy2I { // data sent to login client
 export interface CreateGalaxySettingsI extends GalaxySettingsI {
     reason?: string    
 }
+export interface GalaxyPrevI {
+    myUser: UserPropsI,
+    galaxy: Galaxy2I
+}
 
 // teams
 
@@ -65,6 +69,10 @@ export interface TeamI {
 
 // user view
 
+export interface PrevGalaxyI {
+    galaxyName: string
+}
+
 export interface UserViewI {
     eye: VectorI
     zoom: number
@@ -79,7 +87,8 @@ export interface UserPropsI extends IDable {
 export interface JoinGalaxyI {
     userName: string,
     screenSize: VectorI,
-    galaxyName: string
+    galaxyName: string,
+    teamName: string
 }
 
 export interface GalaxyAdminI {

@@ -1,6 +1,7 @@
-import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, Galaxy2I } from "../../common/declarations"
+import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, Galaxy2I, GalaxyPrevI } from "../../common/declarations"
 import { V } from "../../common/math"
 import { canvas } from "../components/canvas"
+import { GalaxyView } from "../galaxyView/galaxyview"
 import { keyListeners, keys, keysArray } from "../keybord"
 import { setGameData } from "../object-functions/game"
 
@@ -8,13 +9,17 @@ export let socketUser: SocketUser
 export function getConnection() { return socketUser }
 
 export class SocketUser {
+    static instance: SocketUser
+
     serverUrl: string
     private connection?: WebSocket
     userView: UserViewI | null = null
     connected = false
     keyBoard: ClientKeyboardI | null = null
     mouse: ClientMouseI | null = null
+
     private prevGalaxy?: Galaxy2I
+    private prevGalaxyName?: string
 
     props: UserPropsI = {
         id: '0',
@@ -22,7 +27,9 @@ export class SocketUser {
         galaxy: null
     }
 
-    constructor(url: string) {
+    constructor(url: string, prevGalaxyName: string)  {
+        this.prevGalaxyName = prevGalaxyName
+
         keyListeners.push(() => {
             this.keyBoard = { keys: keysArray() }
         })
@@ -31,12 +38,12 @@ export class SocketUser {
         this.connect(url)
 
         socketUser = this
+        SocketUser.instance = this
 
         console.log('UserSocket created.')
     }
 
     private connect(url: string) {
-        console.log('WebSocket initializing on url "' + url + '"...')
         this.connected = false
         this.serverUrl = url
         this.connection = new WebSocket(this.serverUrl)
@@ -49,8 +56,8 @@ export class SocketUser {
 
             if (reconnecting) this.connection!.close()
             this.connection = s
-
-            this.joinGalaxy('jonas')
+            
+            if (this.prevGalaxyName) this.setPreviewGalaxy(this.prevGalaxyName)
         }
         s.onerror = (e) => {
             console.error('Websocket Error: ' + e.target)
@@ -64,17 +71,69 @@ export class SocketUser {
         }
     }
 
-    setPreviewGalaxy(galaxy: string) {
+    private onMessage(parse: SendFormatI, fromGameData?: boolean) {
+        const printOut = () => {
+            console.log('Client [' + this.props.name + ']: recieves data "' + parse.header + '"')
+            console.log(parse.value)
+            console.log()
+        }
 
+        if (parse.header === 'join-galaxy-result') { // one's joined a game
+            GalaxyView.instance.setErrorResult(parse.value)
+            /*if (parse.value.successfully) {
+                const password:  GalaxyAdminI = { password: 'jonasp', value: null }
+                this.send('start-game', password)
+            }
+            else {
+                alert(parse.value.errorType + ': ' + parse.value.message)
+            }*/
+        }
+        if (parse.header === 'start-game-result') {
+            GalaxyView.instance.setErrorResult(parse.value)
+            /*if (parse.value.successfully) {
+                //alert('successfully game started!')
+                const gs = parse.value.data as GameStartI
+                gs.listeningKeys.forEach(l => keys.set(l, false))
+                this.log(gs.listeningKeys)
+
+                setTimeout(() => {
+                    this.requestData()
+                }, 10)
+            }
+            else {
+                alert(parse.value.errorType + ': ' + parse.value.message)
+            }*/
+        }
+
+        if (parse.header === 'prev-galaxy-data') {
+            const data = parse.value as GalaxyPrevI
+            
+            this.prevGalaxy = data.galaxy
+            this.prevGalaxyName = data.galaxy.props.name
+            this.props = data.myUser
+
+            GalaxyView.instance.setGalaxyPrev(data)
+        }
+
+        if (parse.header === 'game-data') this.recieveData(parse.value)
     }
 
-    joinGalaxy(galaxy: string) {
-        const join: JoinGalaxyI = {
-            userName: 'jonas',
-            screenSize: V.vec(window.innerWidth, window.innerHeight),
-            galaxyName: galaxy
+    setPreviewGalaxy(galaxy: string) { this.send('prev-galaxy', { galaxyName: galaxy }) }
+
+    joinGalaxy(teamName: string) {
+        if (this.prevGalaxyName) {
+            const join: JoinGalaxyI = {
+                userName: 'jonas',
+                screenSize: V.vec(window.innerWidth, window.innerHeight),
+                galaxyName: this.prevGalaxyName,
+                teamName: teamName
+            }
+            this.send('join-galaxy', join)
         }
-        this.send('join-galaxy', join)
+    }
+
+    joinGame() {
+        this.send('join-game', undefined)
     }
 
     requestData() {
@@ -90,12 +149,6 @@ export class SocketUser {
 
     recieveData(d: any) {
         const data = d as GameDataForSendingI
-
-        /*if (data.fullData) {
-            console.log("reciving full data")
-            console.log(data)
-            console.log()
-        }*/
             
         this.props = data.yourUserProps
         this.userView = data.userView
@@ -106,43 +159,6 @@ export class SocketUser {
         canvas.paint()
 
         this.requestData()
-    }
-
-    onMessage(parse: SendFormatI, fromGameData?: boolean) {
-        const printOut = () => {
-            console.log('Client [' + this.props.name + ']: recieves data "' + parse.header + '"')
-            console.log(parse.value)
-            console.log()
-        }
-
-        if (parse.header === 'join-galaxy-result') { // one's joined a game
-            if (parse.value.successfully) {
-                //alert('successfully joined!')
-
-                const password:  GalaxyAdminI = { password: 'jonasp', value: null }
-                this.send('start-game', password)
-            }
-            else {
-                alert(parse.value.errorType + ': ' + parse.value.message)
-            }
-        }
-        if (parse.header === 'start-game-result') {
-            if (parse.value.successfully) {
-                //alert('successfully game started!')
-                const gs = parse.value.data as GameStartI
-                gs.listeningKeys.forEach(l => keys.set(l, false))
-                this.log(gs.listeningKeys)
-
-                setTimeout(() => {
-                    this.requestData()
-                }, 10)
-            }
-            else {
-                alert(parse.value.errorType + ': ' + parse.value.message)
-            }
-        }
-
-        if (parse.header === 'game-data') this.recieveData(parse.value)
     }
 
     log(s: any) {

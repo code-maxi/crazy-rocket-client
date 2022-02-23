@@ -55,11 +55,15 @@ import { GalaxyView } from "./game/galaxyView/galaxyview"
     'map_this_rocket.png'
 ])*/
 
-new SocketUser('ws://localhost:1234/socket')
+const search = new URLSearchParams(window.location.href)
+const prevGalaxy = search.get('galaxy')
+console.log('Galaxy-Parameter: ' + prevGalaxy)
+
+if (prevGalaxy) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
 ReactDOM.render(
     <React.StrictMode>
-        <GalaxyView galaxy="galaxy-1" />
+        <GalaxyView noGalaxySpecifyed={ prevGalaxy === undefined } />
     </React.StrictMode>,
     document.getElementById('root')
 )

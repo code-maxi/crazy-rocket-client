@@ -1,3 +1,4 @@
+import Feedback from 'react-bootstrap/Feedback'
 import Alert from 'react-bootstrap/Alert'
 import ListGroup from 'react-bootstrap/ListGroup'
 import Form from 'react-bootstrap/Form'
@@ -12,93 +13,128 @@ import Col from 'react-bootstrap/Col'
 import { BootIcon } from '../../gui-adds'
 
 import React from "react";
-import { Galaxy2I, GalaxyI, GalaxyStateT, ResponseResult, RocketTeamColorT, UserPropsI } from "../../common/declarations"
-import { getConnection } from "../network/SocketUser"
+import { Galaxy2I, GalaxyI, GalaxyPrevI, GalaxyStateT, ResponseResult, RocketTeamColorT, UserPropsI } from "../../common/declarations"
+import { getConnection, SocketUser } from "../network/SocketUser"
 import { ButtonGroup, Collapse } from 'react-bootstrap'
-import { gameData, gameHelper } from '../object-functions/game'
 
 interface GalaxyViewParams {
-    galaxy: string,
-    debug?: {
-        name: string,
-        team: string,
-        password: string
-    }
+    noGalaxySpecifyed: boolean
 }
 
 interface GalaxyViewState {
-    galaxyData?: Galaxy2I,
-    errorMessage?: ResponseResult,
-    joinedUser?: UserPropsI
+    galaxy?: Galaxy2I,
+    error?: {
+        message: string | null,
+        type: string
+    },
+    myUser?: UserPropsI
+}
+
+const exampleGalaxyViewState: GalaxyViewState = {
+    galaxy: {
+        props: {
+            name: 'test-galaxy',
+            state: "queue"
+        },
+        users: [
+            {
+                id: "1",
+                name: "User 1",
+                galaxy: 'test-galaxy'
+            },
+            {
+                id: "2",
+                name: "User 2",
+                galaxy: 'test-galaxy'
+            },
+            {
+                id: "3",
+                name: "User 3",
+                galaxy: 'test-galaxy'
+            }
+        ],
+        teams: [
+            {
+                props: {
+                    galaxyName: 'test-galaxy',
+                    name: "Team Rot",
+                    color: "red",
+                    maxUserSize: 3
+                },
+                userIds: ["1"]
+            },
+            {
+                props: {
+                    galaxyName: 'test-galaxy',
+                    name: "Team Blau",
+                    color: "blue",
+                    maxUserSize: 3
+                },
+                userIds: ["2"]
+            },
+            {
+                props: {
+                    galaxyName: 'test-galaxy',
+                    name: "Team Grün",
+                    color: "green",
+                    maxUserSize: 3
+                },
+                userIds: ["3"]
+            }
+        ],
+        config: {
+            asteroidAmount: 100,
+            asteroidSpeed: 10
+        }
+    },
+    error: {
+        type: 'inlid-text',
+        message: 'Der Name ist zu kurz.'
+    }
 }
 
 export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewState> {
+    static instance: GalaxyView
+    
     nameValue = ''
 
     constructor(p: any) {
         super(p)
-        this.state = {
-            galaxyData: {
-                props: {
-                    name: this.props.galaxy,
-                    state: "queue"
-                },
-                users: [
-                    {
-                        id: "1",
-                        name: "User 1",
-                        galaxy: this.props.galaxy
-                    },
-                    {
-                        id: "2",
-                        name: "User 2",
-                        galaxy: this.props.galaxy
-                    },
-                    {
-                        id: "3",
-                        name: "User 3",
-                        galaxy: this.props.galaxy
-                    }
-                ],
-                teams: [
-                    {
-                        props: {
-                            galaxyName: this.props.galaxy,
-                            name: "Team Rot",
-                            color: "red",
-                            maxUserSize: 3
-                        },
-                        userIds: ["1"]
-                    },
-                    {
-                        props: {
-                            galaxyName: this.props.galaxy,
-                            name: "Team Blau",
-                            color: "blue",
-                            maxUserSize: 3
-                        },
-                        userIds: ["2"]
-                    },
-                    {
-                        props: {
-                            galaxyName: this.props.galaxy,
-                            name: "Team Grün",
-                            color: "green",
-                            maxUserSize: 3
-                        },
-                        userIds: ["3"]
-                    }
-                ],
-                config: {
-                    asteroidAmount: 100,
-                    asteroidSpeed: 10
+        this.state = {}
+        GalaxyView.instance = this
+    }
+
+    setErrorResult(res: ResponseResult) {
+        if (!res.successfully && res.errorType) {
+            this.setState({
+                ...this.state,
+                error: {
+                    message: res.message,
+                    type: res.errorType
                 }
-            }
+            })
+        } else this.setState({
+            ...this.state,
+            error: undefined
+        })
+    }
+
+    setGalaxyPrev(gp: GalaxyPrevI) {
+        const b1 = JSON.stringify(gp.myUser) !== JSON.stringify(this.state.myUser)
+        const b2 = JSON.stringify(gp.galaxy) !== JSON.stringify(this.state.galaxy)
+        if (b1 || b2) {
+            this.setState({
+                ...this.state,
+                galaxy: gp.galaxy,
+                myUser: gp.myUser
+            })   
         }
     }
 
     render(): React.ReactNode {
-        const galData = this.state.galaxyData
+        const galData = this.state.galaxy
+        const joined = this.state.myUser !== undefined
+
         return <Container fluid style={{
             background: 'linear-gradient(40deg, #ae6565, #4f4fee)',
             height: '100vh',
@@ -107,11 +143,11 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
         }}>
             <Row className="justify-content-center align-items-center mt-5 mb-5">
             {
-                galData ? <Card style={{
+                !this.props.noGalaxySpecifyed && galData ? <Card style={{
                     width: 'max-content',
                     minWidth: '300px',
                     position: 'relative'
-                }} className="shadow-lg">
+                }} className="shadow-lg bg-dark bg-gradient text-white">
                     <img src='images/round-rocket.png' style={{
                         position: 'absolute',
                         top: '-20px',
@@ -127,45 +163,60 @@ export class GalaxyView extends React.Component<GalaxyViewParams, GalaxyViewStat
 
                         <div className="justify-content-center d-flex mb-3">
                             <ButtonGroup className="ml-auto mr-auto mt-2">
-                                <Button variant="outline-primary">{BootIcon({ button: true }).ADD_PERSON} Invite Somone via Link</Button>
+                                <Button variant="success">{BootIcon({ button: true }).ADD_PERSON} Invite Somone via Link</Button>
                                 {
-                                    this.state.joinedUser ? (
+                                    joined ? (
                                         galData.props.state === 'queue' ? 
-                                            <Button variant="outline-primary" onClick={() => { this.setState({...this.state, galaxyData: { ...this.state.galaxyData!, props: { ...this.state!.galaxyData!.props, state: 'running' } }}) }}>{BootIcon({ button: true }).TRIANGLE} Run Game as Admin</Button> 
-                                            : <Button variant="primary">→ Join running Game</Button> 
+                                            <Button variant="outline-primary" onClick={() => { this.setState({...this.state, galaxy: { ...this.state.galaxy!, props: { ...this.state!.galaxy!.props, state: 'running' } }}) }}>{BootIcon({ button: true }).TRIANGLE} Run Game as Admin</Button> 
+                                            : <Button variant="primary" onClick={() => SocketUser.instance.joinGame()}>→ Join running Game</Button> 
                                     ) : undefined
                                 }
                             </ButtonGroup>
                         </div>
 
                         <Card.Text>
-                            <GalaxyViewTip user={ this.state.joinedUser } galaxyState={ galData.props.state } galaxyName={ galData.props.name } />
+                            <GalaxyViewTip user={ this.state.myUser } galaxyState={ galData.props.state } galaxyName={ galData.props.name } />
+
+                            {
+                                this.state.error && this.state.error.type !== 'invalid-text' ?
+                                    <GalaxyViewException message={this.state.error.message} /> : undefined
+                            }
                         </Card.Text>
 
-                        <RocketTeamList galaxy={galData} onUserJoin={team => {
-                            this.setState({ ...this.state, joinedUser: {
+                        <RocketTeamList galaxy={galData} joinedTeam={this.state.myUser?.teamName} onUserJoin={team => {
+                            /*this.setState({ ...this.state, myUser: {
                                 id: "3",
                                 name: this.nameValue,
                                 galaxy: this.props.galaxy,
                                 teamName: team
-                            }}) 
+                            }})*/
+
+                            SocketUser.instance.joinGalaxy(team)
                         }} />
                         
-                        <Collapse in={ this.state.joinedUser === undefined }>
+                        <Collapse in={ !joined }>
                             <InputGroup className="mb-3">
-                                <InputGroup.Text id="basic-addon1">{ BootIcon().USER_ICON }</InputGroup.Text>
+                                <InputGroup.Text className="bg-dark fs-6 text-white border-secondary" id="basic-addon1">{ BootIcon().USER_ICON }</InputGroup.Text>
                                 <Form.Control
                                     placeholder="Your Nickname for the Game..."
                                     aria-label="Username"
                                     aria-describedby="basic-addon1"
+                                    className="bg-dark text-white fs-6 border-secondary"
                                     onChange={e => {
                                         this.nameValue = e.target.value as string
                                     }}
+                                    isInvalid={!joined && this.state.error && this.state.error.type === 'invalid-text'}
                                 />
+                                {!joined && this.state.error && this.state.error.type === 'invalid-text' ? <Form.Control.Feedback type="invalid">{ this.state.error.message }</Form.Control.Feedback> : undefined }
                             </InputGroup>
                         </Collapse>
                     </Card.Body>
-                </Card> : <Spinner animation="border" />
+                </Card> : (
+                    !this.props.noGalaxySpecifyed ? 
+                        <Spinner animation="border" /> : <Alert variant="info" className="bg-danger px-2 py-1 bg-gradient bg-opacity-50 text-white border-0" style={{ maxWidth: '400px' }}>
+                            There is no galaxy specified as URL-Parameter.
+                        </Alert>
+                )
             }
             </Row>
         </Container>
@@ -181,13 +232,23 @@ export function bootTeamColor(c: RocketTeamColorT) {
     return res!
 }
 
+function GalaxyViewException(p: {
+    message: string | null
+}) {
+    return <div className='d-flex justify-content-center'>
+        <Alert variant="info" className="bg-danger px-2 py-1 bg-gradient bg-opacity-50 text-white border-0" style={{ maxWidth: '400px' }}>
+            { p.message ? 'Error: ' + p.message : 'Unknown Exception.' }
+        </Alert>
+    </div>
+}
+
 function GalaxyViewTip(p: {
     user?: UserPropsI,
     galaxyState: GalaxyStateT,
     galaxyName: string,
 }) {
     return <div className='d-flex justify-content-center'>
-        <Alert variant="info" style={{ maxWidth: '400px' }}>
+        <Alert variant="info" className="bg-primary bg-gradient bg-opacity-50 text-white border-0" style={{ maxWidth: '400px' }}>
             { !p.user ? "Hi there, welcome to the Galaxy \"" + p.galaxyName + "\"! You can join a team by specifying your name below and then clicking on the \"Join\" button of the selected Team." : '' }
             { p.user ? "Great " + p.user.name + ", you joined the Team \"" + p.user.teamName + "\". " : '' }
             { p.user && p.galaxyState === 'queue' ? "The Game hasn't been ran yet so you have to wait until the administrator runs it." : '' }
@@ -198,6 +259,7 @@ function GalaxyViewTip(p: {
 
 function RocketTeamList(p: {
     galaxy: Galaxy2I,
+    joinedTeam?: string,
     onUserJoin: (teamName: string) => void
 }) {
     return <ListGroup variant="flush" className='mb-4'>
@@ -207,7 +269,9 @@ function RocketTeamList(p: {
                     <Stack direction="horizontal" className="align-items-center" gap={3}>
                         <p className="fs-5 mb-0">{team.props.name}</p>
                         <p className="fs-7 mb-0">{team.userIds.map(id => p.galaxy.users.find(u => u.id == id)?.name).join(", ")}</p>
-                        <Button variant='light' className='ms-auto' onClick={() => { p.onUserJoin(team.props.name) }}>→ Join</Button>
+                        { !p.joinedTeam ? <Button variant='dark bg-gradient' className='ms-auto' onClick={() => { p.onUserJoin(team) }}>→ Join</Button>
+                             : ( team.props.name === p.joinedTeam ? <div className='ms-auto bg-gradient bg-success shadow-sm rounded p-1'>{BootIcon({ button: true }).CHECK} Joined</div> : undefined )
+                        }
                     </Stack>
                 </ListGroup.Item>
             )
