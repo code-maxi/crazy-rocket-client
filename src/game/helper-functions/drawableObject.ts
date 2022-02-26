@@ -1,6 +1,5 @@
 import { DrawableObjectI } from "../../common/declarations";
 import { getImage } from "../images";
-import { PaintableHelperFunctionI } from "./decl";
 
 export function drawableObject(o: DrawableObjectI) {
     return {

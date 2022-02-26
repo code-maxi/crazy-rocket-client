@@ -1,4 +1,4 @@
-import { ClientGameDataI, TypeObjectI, AsteroidI, RocketI, GalaxyI, VectorI } from "../../common/declarations";
+import { ClientGameDataI, TypeObjectI, AsteroidI, RocketI, VectorI } from "../../common/declarations";
 import { getImage } from "../images";
 import { asteroidHelper } from "./asteriod";
 import { rocketHelper } from "./rocket";
@@ -17,9 +17,9 @@ export function gameHelper(sis: ClientGameDataI) {
             g.lineWidth = 20
             g.beginPath()
             g.moveTo(0,0)
-            g.lineTo(sis.settings.width, 0)
-            g.lineTo(sis.settings.width, sis.settings.height)
-            g.lineTo(0, sis.settings.height)
+            g.lineTo(sis.props.width, 0)
+            g.lineTo(sis.props.width, sis.props.height)
+            g.lineTo(0, sis.props.height)
             g.closePath()
             g.stroke()
         },
@@ -28,8 +28,8 @@ export function gameHelper(sis: ClientGameDataI) {
             let x = -eye.x/4.0
             let y = -eye.y/4.0
 
-            let w = sis.settings.width/2
-            let h = sis.settings.height/2
+            let w = sis.props.width/2
+            let h = sis.props.height/2
 
             let xx = x
             let yy = y

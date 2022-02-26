@@ -1,8 +1,8 @@
 import React from "react";
-import { gameHelper } from "../object-functions/game";
+import { gameHelper } from "../helper-functions/game";
 import { keyListen } from "../keybord";
 import { MapConfig, rocketMapHelper } from "./map";
-import { SocketUser, socketUser } from "../network/SocketUser";
+import { SocketUser } from "../network/socket-user";
 import { V } from "../../common/math";
 import { getImage } from "../images";
 

@@ -1,5 +1,3 @@
-import { socketUser } from "./network/SocketUser"
-
 export const keys = new Map<string, boolean>()
 export function keysArray() {
     let ka: { key: string, active: boolean }[] = []

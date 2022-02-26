@@ -11,6 +11,7 @@ export class GalaxyRootGUI extends React.Component<{ noGalaxySpecified: boolean 
     constructor(p: any) {
         super(p)
         this.state = { displayType: 'login' }
+        GalaxyRootGUI.instance = this
     }
 
     setCanvasDisplay() { this.setState({ ...this.state, displayType: 'canvas' }) }

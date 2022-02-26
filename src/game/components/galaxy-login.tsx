@@ -11,12 +11,12 @@ import Row from 'react-bootstrap/Row'
 import { BootIcon } from '../../gui-adds'
 
 import React from "react";
-import { Galaxy2I, GalaxyPrevI, GalaxyStateT, ResponseResult, RocketTeamColorT, UserPropsI } from "../../common/declarations"
-import { SocketUser } from "../network/SocketUser"
+import { GalaxyI, GalaxyPrevI, GalaxyStateT, ResponseResultI, TeamColorT, UserPropsI } from "../../common/declarations"
+import { SocketUser } from "../network/socket-user"
 import { ButtonGroup, Collapse } from 'react-bootstrap'
 
 export interface GalaxyLoginStateI {
-    galaxy?: Galaxy2I,
+    galaxy?: GalaxyI,
     error?: {
         message: string | null,
         type: string
@@ -34,17 +34,20 @@ const exampleGalaxyViewState: GalaxyLoginStateI = {
             {
                 id: "1",
                 name: "User 1",
-                galaxy: 'test-galaxy'
+                galaxy: 'test-galaxy',
+                teamColor: null
             },
             {
                 id: "2",
                 name: "User 2",
-                galaxy: 'test-galaxy'
+                galaxy: 'test-galaxy',
+                teamColor: null
             },
             {
                 id: "3",
                 name: "User 3",
-                galaxy: 'test-galaxy'
+                galaxy: 'test-galaxy',
+                teamColor: null
             }
         ],
         teams: [
@@ -52,8 +55,7 @@ const exampleGalaxyViewState: GalaxyLoginStateI = {
                 props: {
                     galaxyName: 'test-galaxy',
                     name: "Team Rot",
-                    color: "red",
-                    maxUserSize: 3
+                    color: "red"
                 },
                 userIds: ["1"]
             },
@@ -61,8 +63,7 @@ const exampleGalaxyViewState: GalaxyLoginStateI = {
                 props: {
                     galaxyName: 'test-galaxy',
                     name: "Team Blau",
-                    color: "blue",
-                    maxUserSize: 3
+                    color: "blue"
                 },
                 userIds: ["2"]
             },
@@ -70,16 +71,11 @@ const exampleGalaxyViewState: GalaxyLoginStateI = {
                 props: {
                     galaxyName: 'test-galaxy',
                     name: "Team Grün",
-                    color: "green",
-                    maxUserSize: 3
+                    color: "green"
                 },
                 userIds: ["3"]
             }
-        ],
-        config: {
-            asteroidAmount: 100,
-            asteroidSpeed: 10
-        }
+        ]
     },
     error: {
         type: 'inlid-text',
@@ -94,7 +90,12 @@ export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean },
 
     constructor(p: any) {
         super(p)
-        this.state = {  }
+        this.state = {
+            error: this.props.noGalaxySpecifyed ? {
+                message: "There is no galaxy specified as URL-Parameter.",
+                type: "no-galaxy-specified"
+            } : undefined 
+        }
         GalaxyLogin.instance = this
     }
 
@@ -110,7 +111,7 @@ export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean },
         }
     }
 
-    setErrorResult(res: ResponseResult) {
+    setErrorResult(res: ResponseResultI) {
         if (!res.successfully && res.errorType) {
             this.setState({
                 ...this.state,
@@ -161,8 +162,19 @@ export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean },
                                 {
                                     joined ? (
                                         galData.props.state === 'queue' ? 
-                                            <Button variant="outline-primary" onClick={() => { this.setState({...this.state, galaxy: { ...this.state.galaxy!, props: { ...this.state!.galaxy!.props, state: 'running' } }}) }}>{BootIcon({ button: true }).TRIANGLE} Run Game as Admin</Button> 
-                                            : <Button variant="primary" onClick={() => SocketUser.instance.joinGame()}>→ Join running Game</Button> 
+                                            <Button 
+                                                variant="outline-primary" 
+                                                onClick={() => {
+                                                    //this.setState({...this.state, galaxy: { ...this.state.galaxy!, props: { ...this.state!.galaxy!.props, state: 'running' } }}) 
+                                                    SocketUser.instance.runGame('lalala')
+                                                }}
+                                            > {BootIcon({ button: true }).TRIANGLE} Run Game as Admin
+                                            </Button> :
+                                            <Button 
+                                                variant="primary" 
+                                                onClick={() => SocketUser.instance.joinGame()}
+                                            >→ Join running Game
+                                            </Button> 
                                     ) : undefined
                                 }
                             </ButtonGroup>
@@ -176,16 +188,19 @@ export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean },
                             }
                         </Card.Text>
 
-                        <RocketTeamList galaxy={galData} joinedTeam={this.state.myUser?.teamName} onUserJoin={team => {
+                        <RocketTeamList 
+                            galaxy={galData} 
+                            joinedTeam={this.state.myUser?.teamColor} 
+                            onUserJoin={teamcolor => {
                             /*this.setState({ ...this.state, myUser: {
                                 id: "3",
                                 name: this.nameValue,
                                 galaxy: this.state.galaxy,
                                 teamName: team
                             }})*/
-
-                            SocketUser.instance.joinGalaxy(team)
-                        }} />
+                               SocketUser.instance.joinGalaxy(this.nameValue, teamcolor)
+                            }}
+                        />
                         
                         <Collapse in={ !joined }>
                             <InputGroup className="mb-3">
@@ -205,9 +220,9 @@ export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean },
                         </Collapse>
                     </Card.Body>
                 </Card> : (
-                    !this.props.noGalaxySpecifyed ? 
+                    !this.state.error ? 
                         <Spinner animation="border" /> : <Alert variant="info" className="bg-danger px-2 py-1 bg-gradient bg-opacity-50 text-white border-0" style={{ maxWidth: '400px' }}>
-                            There is no galaxy specified as URL-Parameter.
+                            Error: {this.state.error.message}
                         </Alert>
                 )
             }
@@ -216,7 +231,7 @@ export class GalaxyLogin extends React.Component<{ noGalaxySpecifyed: boolean },
     }
 }
 
-export function bootTeamColor(c: RocketTeamColorT) {
+export function bootTeamColor(c: TeamColorT) {
     var res: string | undefined = undefined
     if (c === 'blue') res = 'primary'
     if (c === 'red') res = 'danger'
@@ -243,7 +258,7 @@ function GalaxyViewTip(p: {
     return <div className='d-flex justify-content-center'>
         <Alert variant="info" className="bg-primary bg-gradient bg-opacity-50 text-white border-0" style={{ maxWidth: '400px' }}>
             { !p.user ? "Hi there, welcome to the Galaxy \"" + p.galaxyName + "\"! You can join a team by specifying your name below and then clicking on the \"Join\" button of the selected Team." : '' }
-            { p.user ? "Great " + p.user.name + ", you joined the Team \"" + p.user.teamName + "\". " : '' }
+            { p.user ? "Great " + p.user.name + ", you joined the Team \"" + p.user.name + "\". " : '' }
             { p.user && p.galaxyState === 'queue' ? "The Game hasn't been ran yet so you have to wait until the administrator runs it." : '' }
             { p.user && p.galaxyState === 'running' ? "The Game is now running and you can join it by clicking on the button \"Join Running Game\" above." : '' }
         </Alert>
@@ -251,8 +266,8 @@ function GalaxyViewTip(p: {
 }
 
 function RocketTeamList(p: {
-    galaxy: Galaxy2I,
-    joinedTeam?: string,
+    galaxy: GalaxyI,
+    joinedTeam?: string | null,
     onUserJoin: (teamName: string) => void
 }) {
     return <ListGroup variant="flush" className='mb-4'>
@@ -262,8 +277,8 @@ function RocketTeamList(p: {
                     <Stack direction="horizontal" className="align-items-center" gap={3}>
                         <p className="fs-5 mb-0">{team.props.name}</p>
                         <p className="fs-7 mb-0">{team.userIds.map(id => p.galaxy.users.find(u => u.id == id)?.name).join(", ")}</p>
-                        { !p.joinedTeam ? <Button variant='dark bg-gradient' className='ms-auto' onClick={() => { p.onUserJoin(team.props.name) }}>→ Join</Button>
-                             : ( team.props.name === p.joinedTeam ? <div className='ms-auto bg-gradient bg-success shadow-sm rounded p-1'>{BootIcon({ button: true }).CHECK} Joined</div> : undefined )
+                        { !p.joinedTeam ? <Button variant='dark bg-gradient' className='ms-auto' onClick={() => { p.onUserJoin(team.props.color) }}>→ Join</Button>
+                             : ( team.props.color === p.joinedTeam ? <div className='ms-auto bg-gradient bg-success shadow-sm rounded p-1'>{BootIcon({ button: true }).CHECK} Joined</div> : undefined )
                         }
                     </Stack>
                 </ListGroup.Item>

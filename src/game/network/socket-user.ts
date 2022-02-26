@@ -1,12 +1,10 @@
-import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, Galaxy2I, GalaxyPrevI, ClientGameDataI } from "../../common/declarations"
+import { ClientRequestI, ClientKeyboardI, ClientMouseI, GalaxyAdminI, GameDataForSendingI, GameStartI, JoinGalaxyI, SendFormatI, UserPropsI, UserViewI, GalaxyI, GalaxyPrevI, ClientGameDataI, PrevGalaxyRequestI, OwnExceptionI, ResponseResultI } from "../../common/declarations"
 import { V } from "../../common/math"
 import { RocketCanvas } from "../components/canvas"
 import { GalaxyLogin } from "../components/galaxy-login"
 import { keyListeners, keys, keysArray } from "../keybord"
-import { gameHelper } from "../object-functions/game"
-
-export let socketUser: SocketUser
-export function getConnection() { return socketUser }
+import { gameHelper } from "../helper-functions/game"
+import { GalaxyRootGUI } from "../components/root-gui"
 
 export class SocketUser {
     static instance: SocketUser
@@ -15,7 +13,7 @@ export class SocketUser {
     private connection?: WebSocket
     private connected = false
 
-    private prevGalaxy?: Galaxy2I
+    private prevGalaxy?: GalaxyI
     private prevGalaxyName?: string
 
     private keyBoard: ClientKeyboardI | null = null
@@ -23,6 +21,8 @@ export class SocketUser {
     
     private userView: UserViewI | null = null
     private gameData: ClientGameDataI | null = null
+
+    private gameJoined = false
 
     props: UserPropsI = {
         id: '0',
@@ -43,7 +43,6 @@ export class SocketUser {
         this.serverUrl = url
         this.connect(url)
 
-        socketUser = this
         SocketUser.instance = this
 
         console.log('UserSocket created.')
@@ -84,6 +83,13 @@ export class SocketUser {
             console.log()
         }
 
+        if (parse.header === 'game-data') this.recieveGameData(parse.value)
+        else {
+            console.log('Recieving data with header "' + parse.header + '":')
+            console.log(parse.value)
+            console.log()
+        }
+
         if (parse.header === 'join-galaxy-result') { // one's joined a game
             GalaxyLogin.instance.setErrorResult(parse.value)
             /*if (parse.value.successfully) {
@@ -111,6 +117,17 @@ export class SocketUser {
             }*/
         }
 
+        if (parse.header === 'join-game-result') {
+            GalaxyLogin.instance.setErrorResult(parse.value)
+            
+            if (parse.value.successfully === true) {
+                this.gameJoined = true
+                GalaxyRootGUI.instance.setCanvasDisplay()
+                
+                this.requestGameData()
+            }
+        }
+
         if (parse.header === 'prev-galaxy-data') {
             const data = parse.value as GalaxyPrevI
             
@@ -121,21 +138,43 @@ export class SocketUser {
             GalaxyLogin.instance.setGalaxyPrev(data)
         }
 
-        if (parse.header === 'game-data') this.recieveGameData(parse.value)
+        if (parse.header === 'error-occurred') {
+            const error = parse.value as OwnExceptionI
+            alert('An error occurred: ' + error.message)
+        }
+
+        if (parse.header === 'prev-galaxy-result') {
+            const result = parse.value as ResponseResultI
+            if (result.data) {
+                const data = result.data as GalaxyPrevI
+                GalaxyLogin.instance.setGalaxyPrev(data)
+            } 
+            else GalaxyLogin.instance.setErrorResult(result)
+        }
     }
 
-    setPreviewGalaxy(galaxy: string) { this.send('prev-galaxy', { galaxyName: galaxy }) }
+    setPreviewGalaxy(galaxy: string) {
+        const prevGalaxy: PrevGalaxyRequestI = { galaxy: galaxy }
+        this.send('prev-galaxy', prevGalaxy)
+    }
 
-    joinGalaxy(teamName: string) {
+    joinGalaxy(userName: string, teamName: string) {
         if (this.prevGalaxyName) {
             const join: JoinGalaxyI = {
-                userName: 'jonas',
+                userName: userName,
                 screenSize: V.vec(window.innerWidth, window.innerHeight),
                 galaxyName: this.prevGalaxyName,
-                teamName: teamName
+                teamColor: teamName
             }
             this.send('join-galaxy', join)
         }
+    }
+
+    runGame(password: string) {
+        this.send('start-game', {
+            password: password,
+            value: null
+        })
     }
 
     joinGame() {
@@ -145,7 +184,7 @@ export class SocketUser {
     private setGameData(d: GameDataForSendingI) {
         const objects = this.gameData && !d.fullData ? gameHelper(this.gameData).migrateData(d.objects) : d.objects
         this.gameData = {
-            settings: d.settings,
+            props: d.props,
             objects: objects,
             galaxy: d.galaxy
         }

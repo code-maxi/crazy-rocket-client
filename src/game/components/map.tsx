@@ -1,6 +1,6 @@
 import { ClientGameDataI, VectorI } from "../../common/declarations";
 import { V } from "../../common/math";
-import { gameHelper } from "../object-functions/game";
+import { gameHelper } from "../helper-functions/game";
 
 export interface MapConfig {
     width: number,
@@ -131,8 +131,8 @@ export function rocketMapHelper(config: MapConfig, state: MapState) {
             if (s) {
                 gc.save()
 
-                const gameW = s.gameData.settings.width
-                const gameH = s.gameData.settings.height
+                const gameW = s.gameData.props.width
+                const gameH = s.gameData.props.height
 
                 const configHeight = config.width / gameW * gameH
 

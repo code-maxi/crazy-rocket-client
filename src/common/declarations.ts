@@ -13,7 +13,7 @@ export interface SendFormatI {
 
 // Galaxy and User
 
-export type GalaxyStateT = 'frozen' | 'queue' |  'running'
+export type GalaxyStateT = 'queue' |  'running'
 
 export interface GalaxySettingsI {
     name: string,
@@ -22,7 +22,8 @@ export interface GalaxySettingsI {
 
 export interface GalaxyConfigI {
     asteroidSpeed: number,
-    asteroidAmount: number
+    asteroidAmount: number,
+    maxUsersInTeam: number
 }
 
 export interface GalaxyPropsI {
@@ -31,24 +32,18 @@ export interface GalaxyPropsI {
 }
 
 export interface GalaxyI { // data sent to login client
-    users: UserPropsI[]
-    params: GalaxySettingsI
-    state: GalaxyStateT
-}
-
-export interface Galaxy2I { // data sent to login client
     props: GalaxyPropsI,
-    config: GalaxyConfigI,
+    config?: GalaxyConfigI,
     teams: TeamI[],
     users: UserPropsI[]
 }
 
 export interface CreateGalaxySettingsI extends GalaxySettingsI {
-    reason?: string    
+    reason?: string
 }
 export interface GalaxyPrevI {
     myUser: UserPropsI,
-    galaxy: Galaxy2I
+    galaxy: GalaxyI
 }
 
 // teams
@@ -58,8 +53,7 @@ export type TeamColorT = 'red' | 'green' | 'blue' | 'yellow'
 export interface TeamPropsI {
     galaxyName: string,
     name: string,
-    color: TeamColorT,
-    maxUserSize: number
+    color: TeamColorT
 }
 
 export interface TeamI {
@@ -69,8 +63,14 @@ export interface TeamI {
 
 // user view
 
-export interface PrevGalaxyI {
-    galaxyName: string
+export interface OwnExceptionI {
+    type: string,
+    message: string,
+    data: any | null
+}
+
+export interface PrevGalaxyRequestI {
+    galaxy: string
 }
 
 export interface UserViewI {
@@ -81,14 +81,14 @@ export interface UserViewI {
 export interface UserPropsI extends IDable {
     name: string
     galaxy: string | null,
-    teamName?: string
+    teamColor: string | null
 }
 
 export interface JoinGalaxyI {
     userName: string,
     screenSize: VectorI,
     galaxyName: string,
-    teamName: string
+    teamColor: string
 }
 
 export interface GalaxyAdminI {
@@ -96,7 +96,7 @@ export interface GalaxyAdminI {
     value: any
 }
 
-export interface GameSettingsI {
+export interface GamePropsI {
     level: number,
     width: number,
     height: number
@@ -104,7 +104,7 @@ export interface GameSettingsI {
 
 export interface ClientGameDataI {
     galaxy: GalaxyI,
-    settings: GameSettingsI,
+    props: GamePropsI,
     objects: TypeObjectI[] // has type member,
 }
 
@@ -175,7 +175,7 @@ export interface RocketFireI extends GeoObjectI {
     img: string
 }
 
-export interface ResponseResult {
+export interface ResponseResultI {
     successfully: Boolean
     data: any | null
     message: string | null
@@ -196,13 +196,4 @@ export interface ClientRequestI {
     keyboard: ClientKeyboardI | null,
     mouse: ClientMouseI | null,
     messages: SendFormatI[] | null
-}
-
-export type RocketTeamColorT = "blue" | "red" | "green" | "yellow"
-
-export interface RocketTeamI {
-    galaxy: string,
-    users: UserPropsI,
-    name: string,
-    color: RocketTeamColorT
 }

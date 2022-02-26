@@ -2,15 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './css/style.scss'
 
-import {
-  BrowserRouter,
-  Routes,
-  Route
-} from "react-router-dom";
-import { RocketCanvas } from './game/components/canvas';
-import { SocketUser } from './game/network/SocketUser';
-import { loadImages } from './game/images';
-import { Button, Row } from 'react-bootstrap';
+import { SocketUser } from './game/network/socket-user';
 import { GalaxyRootGUI } from "./game/components/root-gui"
 
 /*
@@ -63,7 +55,7 @@ if (prevGalaxy) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
 ReactDOM.render(
     <React.StrictMode>
-        <GalaxyRootGUI noGalaxySpecifyed={ prevGalaxy === undefined } />
+        <GalaxyRootGUI noGalaxySpecified={ prevGalaxy === undefined } />
     </React.StrictMode>,
     document.getElementById('root')
 )
