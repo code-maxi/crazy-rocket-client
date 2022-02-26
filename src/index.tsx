@@ -47,15 +47,20 @@ import { GalaxyRootGUI } from "./game/components/root-gui"
     'map_this_rocket.png'
 ])*/
 
-const search = new URLSearchParams(window.location.href)
+console.log('Starting Client on url "' + window.location.href + '" ...')
+
+const url = new URL(window.location.href)
+const search = new URLSearchParams(url.search)
 const prevGalaxy = search.get('galaxy')
+const name = search.get('name')
+const autoJoinTeam = search.get('autojointeam')
 console.log('Galaxy-Parameter: ' + prevGalaxy)
 
 if (prevGalaxy) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
 ReactDOM.render(
     <React.StrictMode>
-        <GalaxyRootGUI noGalaxySpecified={ prevGalaxy === undefined } />
+        <GalaxyRootGUI noGalaxySpecifyed={ prevGalaxy === null } name={name} autoJoinTeam={autoJoinTeam} />
     </React.StrictMode>,
     document.getElementById('root')
 )

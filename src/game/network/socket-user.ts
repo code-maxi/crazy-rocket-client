@@ -27,7 +27,8 @@ export class SocketUser {
     props: UserPropsI = {
         id: '0',
         name: 'UNNAMED',
-        galaxy: null
+        galaxy: null,
+        teamColor: null
     }
 
     getUserView() { return this.userView }
@@ -63,6 +64,8 @@ export class SocketUser {
             this.connection = s
             
             if (this.prevGalaxyName) this.setPreviewGalaxy(this.prevGalaxyName)
+
+            GalaxyLogin.instance.onSocketInit()
         }
         s.onerror = (e) => {
             console.error('Websocket Error: ' + e.target)
@@ -92,6 +95,7 @@ export class SocketUser {
 
         if (parse.header === 'join-galaxy-result') { // one's joined a game
             GalaxyLogin.instance.setErrorResult(parse.value)
+            
             /*if (parse.value.successfully) {
                 const password:  GalaxyAdminI = { password: 'jonasp', value: null }
                 this.send('start-game', password)
@@ -130,6 +134,10 @@ export class SocketUser {
 
         if (parse.header === 'prev-galaxy-data') {
             const data = parse.value as GalaxyPrevI
+
+            console.log('prev galaxy data...')
+            console.log(parse.value)
+            console.log()
             
             this.prevGalaxy = data.galaxy
             this.prevGalaxyName = data.galaxy.props.name
@@ -145,11 +153,12 @@ export class SocketUser {
 
         if (parse.header === 'prev-galaxy-result') {
             const result = parse.value as ResponseResultI
-            if (result.data) {
+            if (result.successfully && result.data) {
+                console.log("successful prev-galaxy-result")
                 const data = result.data as GalaxyPrevI
                 GalaxyLogin.instance.setGalaxyPrev(data)
-            } 
-            else GalaxyLogin.instance.setErrorResult(result)
+            }
+            GalaxyLogin.instance.setErrorResult(result)
         }
     }
 
@@ -167,6 +176,7 @@ export class SocketUser {
                 teamColor: teamName
             }
             this.send('join-galaxy', join)
+            console.log('join galaxy sent.')
         }
     }
 

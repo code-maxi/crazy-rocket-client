@@ -1,12 +1,12 @@
 import React from "react";
 import { RocketCanvas } from "./canvas";
-import { GalaxyLogin } from "./galaxy-login"
+import { GalaxyLogin, GalaxyLoginPropsI } from "./galaxy-login"
 
 interface GalaxyRootStateI {
     displayType: 'login' | 'canvas'
 }
 
-export class GalaxyRootGUI extends React.Component<{ noGalaxySpecified: boolean }, GalaxyRootStateI> {
+export class GalaxyRootGUI extends React.Component<GalaxyLoginPropsI, GalaxyRootStateI> {
     static instance: GalaxyRootGUI
     constructor(p: any) {
         super(p)
@@ -19,7 +19,7 @@ export class GalaxyRootGUI extends React.Component<{ noGalaxySpecified: boolean 
     render(): React.ReactNode {
         return (
             this.state.displayType === 'login' ? 
-                <GalaxyLogin noGalaxySpecifyed={ this.props.noGalaxySpecified } />
+                <GalaxyLogin { ...this.props } />
                 : <RocketCanvas />
         )
     }

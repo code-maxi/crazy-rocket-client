@@ -180,6 +180,7 @@ export interface ResponseResultI {
     data: any | null
     message: string | null
     errorType: string | null
+    header: string | null
 }
 
 export interface GameStartI {
