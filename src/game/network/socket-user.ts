@@ -65,6 +65,12 @@ export class SocketUser {
             
             if (this.prevGalaxyName) this.setPreviewGalaxy(this.prevGalaxyName)
 
+            window.addEventListener('beforeunload', () => {
+                console.log('Page left.')
+                this.send('close-connection', { reason: 'page-closed' })
+                return null
+            })
+
             GalaxyLogin.instance.onSocketInit()
         }
         s.onerror = (e) => {
@@ -178,6 +184,9 @@ export class SocketUser {
             this.send('join-galaxy', join)
             console.log('join galaxy sent.')
         }
+        /*setTimeout(() => {
+            this.connection!.close()
+        }, 1500)*/
     }
 
     runGame(password: string) {

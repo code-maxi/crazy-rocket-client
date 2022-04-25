@@ -1,12 +1,15 @@
 import React from "react";
-import { gameHelper } from "../helper-functions/game";
 import { keyListen } from "../keybord";
 import { MapConfig, rocketMapHelper } from "./map";
-import { SocketUser } from "../network/socket-user";
 import { V } from "../../common/math";
-import { getImage } from "../images";
+import { PaintGameWorld, PaintTransformI } from "../paint/paint_declarations"
+import { paintObject } from "../paint/paint_helpers"
+import { VectorI } from "../../common/declarations";
+import { paintPoint } from "../paint/paint_addons";
 
-export class RocketCanvas extends React.Component<{}, {
+export class RocketCanvas extends React.Component<{
+    
+}, {
     width: number,
     height: number
 }, {}> {
@@ -31,42 +34,6 @@ export class RocketCanvas extends React.Component<{}, {
         RocketCanvas.instance = this
     }
 
-    private draw(g: CanvasRenderingContext2D) {
-        const canvasWidth = this.state.width
-        const canvasHeight = this.state.height
-        const canvasSize = V.vec(canvasWidth, canvasHeight)
-
-        g.fillStyle = "black"
-        g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)
-
-        const drawErrorImage = () => {
-            const niSize = V.mul(canvasSize, 0.4)
-            const niPos = V.sub(V.half(canvasSize), V.half(niSize))
-            g.drawImage(
-                getImage('noimage.png'), 
-                niPos.x, niPos.y, 
-                niSize.x, niSize.y
-            )
-        }
-
-        if (SocketUser.instance) {
-            const gameData = SocketUser.instance.getGameData()
-            const userView = SocketUser.instance.getUserView()
-
-            if (gameData && userView && gameData) {
-                const gameObject = gameHelper(gameData)
-
-                gameObject.paintWorld(g, userView.eye, userView.zoom, canvasSize)
-
-                rocketMapHelper(this.mapConfig, {
-                    gameData: gameData,
-                    eye: userView.eye
-                }).paint(g, V.vec(canvasWidth, canvasHeight))
-
-            } else drawErrorImage()
-        } else drawErrorImage()
-    }
-
     private init() {
         keyListen()
 
@@ -87,9 +54,48 @@ export class RocketCanvas extends React.Component<{}, {
         this.paint()
     }
 
-    paint() {
-        const context = this.ref!.getContext('2d')!
-        this.draw(context)
+    paint(world?: PaintGameWorld) {
+        const gc = this.ref!.getContext('2d')!
+        
+        const canvasWidth = this.state.width
+        const canvasHeight = this.state.height
+        const canvasSize = V.vec(canvasWidth, canvasHeight)
+
+        if (world) {
+            const trans: PaintTransformI = {
+                eye: world.eye,
+                scaling: world.scaling,
+                canvasSize: canvasSize,
+                screenToWorld: (pos: VectorI) => V.mul(V.sub(pos, world.eye), world.scaling),
+                worldToScreen: (pos: VectorI) => V.add(V.mul(V.sub(pos, V.half(canvasSize)), 1/world.scaling), world.eye)
+            }
+    
+            gc.save()
+            gc.translate(canvasSize.x / 2, canvasSize.y / 2)
+
+            const sortedObjects = world.objects.sort(o => o.zIndex ? o.zIndex : 0)
+
+            paintPoint(gc, trans.worldToScreen(V.zero()), 'red', 5)
+
+            sortedObjects.forEach(o => paintObject(o, gc, trans))
+
+            gc.restore()
+        }
+
+        /*g.fillStyle = "black"
+        g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)
+
+        const drawErrorImage = () => {
+            const niSize = V.mul(canvasSize, 0.4)
+            const niPos = V.sub(V.half(canvasSize), V.half(niSize))
+            g.drawImage(
+                getImage('noimage.png'), 
+                niPos.x, niPos.y, 
+                niSize.x, niSize.y
+            )
+        }*/
+
+        
     }
 
     componentDidMount() {

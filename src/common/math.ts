@@ -110,43 +110,48 @@ export function vec(x: number, y: number): VectorI {
 
     
 export const V = {
+    vec(x: number, y: number): VectorI { return { x: x, y: y } },
+    
     zero(): VectorI { return {x:0,y:0} },
+    al(a: number, l: number) { return vec(Math.cos(a) * l, Math.sin(a) * l) },
+    
+    delta(a: VectorI, b: VectorI): VectorI { return { x: b.x-a.x, y: b.y-a.y } },
+    length(v: VectorI): number { return Math.sqrt(v.x*v.x + v.y*v.y) },
+
+    distance(a: VectorI, b: VectorI) { return this.length(this.delta(a,b)) },
+    equals(a: VectorI, b: VectorI) { return a.x === b.x && a.y == b.y },
+    
     mul(a: VectorI, s: number): VectorI { return { x: a.x*s, y: a.y*s } },
     mulVec(a: VectorI, b: VectorI): VectorI { return { x: a.x*b.x, y: a.y*b.y } },
     divVec(a: VectorI, b: VectorI): VectorI { return { x: a.x/b.x, y: a.y/b.y } },
-    delta(a: VectorI, b: VectorI): VectorI { return { x: b.x-a.x, y: b.y-a.y } },
-    length(v: VectorI): number { return Math.sqrt(v.x*v.x + v.y*v.y) },
-    distance(a: VectorI, b: VectorI) { return this.length(this.delta(a,b)) },
-    equals(a: VectorI, b: VectorI) { return a.x === b.x && a.y == b.y },
+    half(v: VectorI): VectorI { return this.mul(v, 0.5) },
+    
     add(a: VectorI, b: VectorI): VectorI { return { x: a.x + b.x, y: a.y + b.y } },
+    sub(a: VectorI, b: VectorI): VectorI { return { x: a.x - b.x, y: a.y - b.y } },
+    addX(a: VectorI, s: number): VectorI { return { x: a.x + s, y: a.y } },
+    addY(a: VectorI, s: number): VectorI { return { x: a.x, y: a.y + s } },
+    
+    negate(a: VectorI) { return vec(-a.x, -a.y) },
+
     addAll(v: VectorI[]) {
         let sum = this.zero()
         v.forEach(i => sum = this.add(sum, i))
         return sum
     },
-    subToNull(a: VectorI, b: VectorI) {
-        return this.add(
-            a,
-            this.vec(
-                a.x > 0 ? -b.x : b.x,
-                a.y > 0 ? -b.y : b.y
-            )
-        )
-    },
-    half(v: VectorI) { return this.mul(v, 0.5) },
-    sub(a: VectorI, b: VectorI): VectorI { return { x: a.x - b.x, y: a.y - b.y } },
+
     normalRight(v: VectorI): VectorI { return { x: v.y, y: -v.x } },
     e(v: VectorI): VectorI { return this.mul(v, 1/this.length(v)) },
+
     square(a: number): VectorI { return { x:a,y:a } },
     scalarProduct(a: VectorI, b: VectorI) { return a.x*b.x + a.y*b.y },
+
     abs(v: VectorI): VectorI { return { x: Math.abs(v.x), y: Math.abs(v.y) } },
-    vec(x: number, y: number): VectorI { return { x: x, y: y } },
     trunc(v: VectorI): VectorI { return { x: Math.trunc(v.x), y: Math.trunc(v.y) } },
+
     includesPoint(point: VectorI, pos: VectorI, size: VectorI) {
         const pos2 = this.add(pos, size)
         return point.x >= pos.x && point.y >= pos.y && point.x <= pos2.x && point.y <= pos2.y
-    },
-    al(a: number, l: number) { return vec(Math.cos(a) * l, Math.sin(a) * l) }
+    }
 }
 
 export const G = {

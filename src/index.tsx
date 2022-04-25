@@ -4,6 +4,7 @@ import './css/style.scss'
 
 import { SocketUser } from './game/network/socket-user';
 import { GalaxyRootGUI } from "./game/components/root-gui"
+import { loadImages } from './game/paint/images';
 
 /*
 <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
@@ -35,7 +36,7 @@ import { GalaxyRootGUI } from "./game/components/root-gui"
 )*/
 //test
 
-/*loadImages([
+loadImages([
     'asteroid.png',
     'background1.jpg',
     'background2.jpg',
@@ -45,7 +46,7 @@ import { GalaxyRootGUI } from "./game/components/root-gui"
     'fire.png',
     'booom.png',
     'map_this_rocket.png'
-])*/
+])
 
 console.log('Starting Client on url "' + window.location.href + '" ...')
 
@@ -54,9 +55,11 @@ const search = new URLSearchParams(url.search)
 const prevGalaxy = search.get('galaxy')
 const name = search.get('name')
 const autoJoinTeam = search.get('autojointeam')
+const debugCanvas = search.get('debug-canvas')
+
 console.log('Galaxy-Parameter: ' + prevGalaxy)
 
-if (prevGalaxy) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
+if (prevGalaxy && !debugCanvas) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
 ReactDOM.render(
     <React.StrictMode>

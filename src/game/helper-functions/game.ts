@@ -1,5 +1,5 @@
 import { ClientGameDataI, TypeObjectI, AsteroidI, RocketI, VectorI } from "../../common/declarations";
-import { getImage } from "../images";
+import { getImage } from "../paint/images";
 import { asteroidHelper } from "./asteriod";
 import { rocketHelper } from "./rocket";
 

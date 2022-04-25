@@ -200,7 +200,7 @@ export class GalaxyLogin extends React.Component<GalaxyLoginPropsI, GalaxyLoginS
 
                         <Collapse in={ this.state.passwordFieldOpen }>
                             <InputGroup className="mb-3" style={{ maxWidth: '400px' }}>
-                                <Button variant="outline-danger" onClick={() => this.endRunGamePassword(false)}>Cancle</Button>
+                                <Button variant="outline-danger" onClick={() => this.endRunGamePassword(false)}>Cancel</Button>
                                 <Form.Control
                                     type="password"
                                     className="bg-dark text-white border-secondary"
