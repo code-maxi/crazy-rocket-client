@@ -1,6 +1,6 @@
 export let images: [string, HTMLImageElement][] = []
 
-export function getImage(s: string) {
+export function getImage(s?: string) {
     const i = images.find(o => o[0] === s)
     return i ? i[1] : images.find(o => o[0] === 'noimage.png')![1]
 }

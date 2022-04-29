@@ -5,6 +5,9 @@ import './css/style.scss'
 import { SocketUser } from './game/network/socket-user';
 import { GalaxyRootGUI } from "./game/components/root-gui"
 import { loadImages } from './game/paint/images';
+import { PaintGameWorldI } from './game/paint/paint_declarations';
+import { vec } from './common/math';
+import { worldToScreen } from './game/paint/paint_tools';
 
 /*
 <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
@@ -59,11 +62,44 @@ const debugCanvas = search.get('debug-canvas')
 
 console.log('Galaxy-Parameter: ' + prevGalaxy)
 
-if (prevGalaxy && !debugCanvas) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
+if (prevGalaxy && debugCanvas !== 'on') new SocketUser('ws://localhost:1234/socket', prevGalaxy)
+
+const debugWorld: PaintGameWorldI = {
+  objects: [
+    {
+      paintType: 'ASTEROID',
+      pos: vec(2, 2),
+      props: {
+        radius: 2,
+        stability: 30,
+        rotation: 2.345
+      },
+      zIndex: 0
+    },
+
+    /*{
+      paintType: 'ASTEROID',
+      pos: vec(-4, -3),
+      props: {
+        radius: 6,
+        stability: 60,
+        rotation: 2.345
+      },
+      zIndex: 1
+    }*/
+  ],
+  eye: vec(2, 2),
+  scaling: 50
+}
 
 ReactDOM.render(
     <React.StrictMode>
-        <GalaxyRootGUI noGalaxySpecifyed={ prevGalaxy === null } name={name} autoJoinTeam={autoJoinTeam} />
+        <GalaxyRootGUI 
+          noGalaxySpecifyed={ prevGalaxy === null }
+          name={name} 
+          autoJoinTeam={autoJoinTeam}
+          debugWorld={(debugCanvas === 'on') ? debugWorld : undefined}
+        />
     </React.StrictMode>,
     document.getElementById('root')
 )

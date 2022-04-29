@@ -42,36 +42,6 @@ export function drawRoundRectangle(gc: CanvasRenderingContext2D, x: number, y: n
     return gc
 }
 
-export function withTransform(
-    data: GamePaintDataI, 
-    gc: CanvasRenderingContext2D, 
-    trans: PaintTransformI, 
-    sizeP: VectorI,
-    callback: (gc: CanvasRenderingContext2D, pos: VectorI, size: VectorI) => void,
-    ignoreScaling?: boolean
-) {
-    const size = V.mul(sizeP, (ignoreScaling === true ? 1 : trans.scaling))
-    const pos = trans.screenToWorld(data.pos)
-
-    gc.save()
-    gc.translate(-pos.x, -pos.y)
-    if (data.rotate) gc.rotate(data.rotate)
-    if (data.scale) gc.scale(data.scale, data.scale)
-
-    data.relativeChildren
-        ?.filter(child => child.paintBehindParent === true)
-        .forEach(child => paintObject(child, gc, {...trans, eye: V.zero()}))
-
-    const relativePosWithCenter = V.mul(V.mulVec(size, data.center ? data.center : vec(0.5,0.5)), -1)
-    callback(gc, relativePosWithCenter, size)
-
-    data.relativeChildren
-        ?.filter(child => child.paintBehindParent !== true)
-        .forEach(child => paintObject(child, gc, {...trans, eye: V.zero()}))
-
-    gc.restore()
-}
-
 export function paintPoint(gc: CanvasRenderingContext2D, pos: VectorI, color: string, radius: number) {
     gc.fillStyle = color
     gc.beginPath()

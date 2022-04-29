@@ -229,7 +229,8 @@ export class SocketUser {
 
         data.messages.forEach(e => this.onMessage(e, true))
 
-        RocketCanvas.instance.paint()
+        //RocketCanvas.instance.paint()
+        // TODO: Transfer data to Canvas
 
         this.requestGameData()
     }
