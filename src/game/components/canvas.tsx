@@ -19,14 +19,14 @@ export class RocketCanvas extends React.Component<{
     
     private canvasRef: HTMLCanvasElement | null = null
     private refF = (e: HTMLCanvasElement | null) => { this.canvasRef = e }
-    private start = true
     private inPaintLoop = false
     
     private worldData?: PaintGameWorldI
 
     private transform: PaintTransformI = {
         eye: V.zero(),
-        scaling: 50.0,
+        scaling: 1.0,
+        unitToPixel: 50.0,
         canvasSize: V.zero()
     }
 
@@ -66,7 +66,7 @@ export class RocketCanvas extends React.Component<{
                         const newEye = V.add(V.mul(V.sub( 
                             this.lastMousePosition,
                             vec(evt.clientX, evt.clientY)
-                        ), 1/this.transform.scaling), this.lastEye)
+                        ), 1/(this.transform.scaling * this.transform.unitToPixel)), this.lastEye)
 
                         console.log('Eye changed...')
                         console.log()
@@ -133,13 +133,12 @@ export class RocketCanvas extends React.Component<{
         this.canvasRef!.onwheel = (evt: WheelEvent) => {
             this.transform = {
                 ...this.transform,
-                scaling: (this.transform.scaling + (evt.deltaY/30))
+                scaling: (this.transform.scaling - (evt.deltaY/1000))
             }
 
             console.log('Mouse left screen...')
             console.log(this.transform, evt.y)
             console.log()
-
         }
 
         const setSizes = () => {

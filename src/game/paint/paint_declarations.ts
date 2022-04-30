@@ -4,6 +4,7 @@ export interface PaintTransformI {
     eye: VectorI
     scaling: number
     canvasSize: VectorI
+    unitToPixel: number
 }
 
 export interface AsteroidPropsI {

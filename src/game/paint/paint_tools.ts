@@ -1,3 +1,5 @@
+import { map } from "jquery";
+import { config } from "process";
 import wrap from "word-wrap";
 import { VectorI } from "../../common/declarations";
 import { V, vec, Vector } from "../../common/math";
@@ -13,21 +15,23 @@ export interface PaintBackroundI {
     borderColor?: string
     borderDash?: number[]
     borderWidth?: number
-    bPadding?: number
+    bPadding?: VectorI,
     bRadius?: number
     tickDirection?: DirectionE
     tickSize?: number
     tickFac?: number,
-    paintBorder?: boolean
+    paintBorder?: boolean,
+    paintBackground?: boolean
 }
 
 const PaintBackroundDefault: PaintBackroundI = {
     bColor: 'rgba(0,0,0,0.5)',
-    bPadding: 5,
+    bPadding: vec(5,8),
     tickSize: 10,
     tickFac: 0.5,
     borderWidth: 1,
-    paintBorder: false
+    paintBorder: false,
+    paintBackground: true
 }
 
 function setBackgroundStyle(gc: CanvasRenderingContext2D, opt: PaintBackroundI, pos1?: VectorI, pos2?: VectorI) {
@@ -56,31 +60,60 @@ export interface PaintGeoI {
     size?: VectorI
     rotation?: number
     transform?: PaintTransformI
+    screenTransform?: VectorI
+    ownScaling?: number
+    partiallyScaling?: number
 }
 
 const PaintGeoDefault: PaintGeoI = {
     pos: vec(0,0),
     origin: vec(0.5,0.5),
-    size: vec(10,10)
+    size: vec(10,10),
+    screenTransform: vec(0,0)
 }
 
 // Transform
 
+export function maxSizeString(str: string, maxSize: number) {
+    return str.length > maxSize ? str.substring(0, maxSize - 3) +'...' : str
+}
+
+export function stringTimesNumber(s: string, n: number) {
+    let res = ''
+    for (let i = 0; i < n; i ++) res += s
+    return res
+}
+
+export function sizeString(str: string, size: number) {
+    const it = maxSizeString(str, size)
+    return it + stringTimesNumber(' ', size - it.length)
+}
+
 export function worldToScreen(pos: VectorI, trans: PaintTransformI) {
-    return V.add(V.mul(V.sub(pos, trans.eye), trans.scaling), V.half(trans.canvasSize))
+    return V.add(V.mul(V.sub(pos, trans.eye), trans.scaling * trans.unitToPixel), V.half(trans.canvasSize))
 }
 export function screenToWorld(pos: VectorI, trans: PaintTransformI) {
-    return V.add(V.mul(V.sub(pos, V.half(trans.canvasSize)), 1/trans.scaling), trans.eye)
+    return V.add(V.mul(V.sub(pos, V.half(trans.canvasSize)), 1/(trans.scaling * trans.unitToPixel)), trans.eye)
+}
+export function pixelToUnit(value: VectorI, trans: PaintTransformI) { return V.mul(value, 1/trans.unitToPixel) }
+export function unitToPixel(value: VectorI, trans: PaintTransformI) { return V.mul(value, trans.unitToPixel) }
+
+export function scalingOfGeoObject(config: PaintGeoI) {
+    return config.ownScaling ? config.ownScaling : (
+        config.partiallyScaling ? 1 + (config.transform!.scaling - 1) * config.partiallyScaling : config.transform!.scaling
+    )
 }
 
 export function transformRect(
     gc: CanvasRenderingContext2D, config: PaintGeoI, 
     callback: (gc: CanvasRenderingContext2D, pos: VectorI, size: VectorI) => void,
-    ownScaling?: number,
-    stillUseTransform?: boolean
+    stillUseTransform?: boolean,
+    ownScaling?: number
 ) {
-    const size = config.transform ? V.mul(config.size!, ownScaling ? ownScaling : config.transform.scaling) : config.size!
-    let pos = config.transform ? worldToScreen(config.pos!, config.transform) : config.pos!
+    const scaling = ownScaling ? ownScaling :  scalingOfGeoObject(config)
+
+    const size = config.transform ? V.mul(config.size!, scaling * config.transform!.unitToPixel) : config.size!
+    const pos = config.transform ? V.add(worldToScreen(config.pos!, config.transform), V.mul(config.screenTransform!, scaling)) : config.pos!
 
     const useTransform = (config?.rotation && config.rotation != 0) || stillUseTransform === true
 
@@ -90,7 +123,7 @@ export function transformRect(
         if (config?.rotation) gc.rotate(config.rotation)
     }
     
-    let relativePosWithCenter = V.mulVec(size, V.negate(vec(0.5,0.5)))
+    let relativePosWithCenter = V.mulVec(size, V.negate(config.origin!))
     if (useTransform === false) relativePosWithCenter = V.add(relativePosWithCenter, pos)
 
     /*paintPoint(gc, V.zero(), "red", 10)
@@ -145,7 +178,8 @@ const PaintProcessDefault: PaintProcessI = {
     fColor1: 'red',
     fColor2: 'green',
     bColor: 'rgba(0,0,0,0.4)',
-    borderWidth: 1
+    borderWidth: 1,
+    partiallyScaling: 0.4
 }
 
 export function paintProcessBar(gc: CanvasRenderingContext2D, opt: PaintProcessI) {
@@ -167,13 +201,14 @@ export function paintProcessBar(gc: CanvasRenderingContext2D, opt: PaintProcessI
 
         drawRoundRectangle(gc, pos.x, pos.y, size.x * (options.value!/100), size.y, options.roundedCorners!)
         gc.fill()
+        gc.stroke()
 
         if (options.borderColor) {
             setBackgroundStyle(gc, options, pos, V.addX(pos, size.x))
             drawRoundRectangle(gc, pos.x, pos.y, size.x, size.y, options.roundedCorners!)
             gc.stroke()
         }
-    }, 1)
+    })
 }
 
 // Rounded Rectangle
@@ -189,95 +224,95 @@ export function paintBackroundArea(gc: CanvasRenderingContext2D, opt: PaintBackg
         ...opt
     }
 
-    let r = options.bRadius!
+    if (options.paintBackground === true) {
+        let r = options.bRadius!
 
-    const pos = options.pos!
-    const size = options.size!
+        const pos = options.pos!
+        const size = options.size!
 
-    const x = pos.x
-    const y = pos.y
-    const w = size.x
-    const h = size.y
-    const tickSize = options.tickSize!
+        const x = pos.x
+        const y = pos.y
+        const w = size.x
+        const h = size.y
+        const tickSize = options.tickSize!
 
-    const paintTick = () => {
-        let trianglePos: [VectorI, VectorI, VectorI] | null = null
-        
-        const fac = options.tickFac!
-        const d = options.tickDirection
+        const paintTick = () => {
+            let trianglePos: [VectorI, VectorI, VectorI] | null = null
+            
+            const fac = options.tickFac!
+            const d = options.tickDirection
 
-        if (d == 'top') {
-            const p = V.addX(pos, size.x * fac)
-            trianglePos = [
-                V.addX(p, -tickSize/2),
-                V.addY(p, -tickSize),
-                V.addX(p, tickSize/2)
-            ]
+            if (d == 'top') {
+                const p = V.addX(pos, size.x * fac)
+                trianglePos = [
+                    V.addX(p, -tickSize/2),
+                    V.addY(p, -tickSize),
+                    V.addX(p, tickSize/2)
+                ]
+            }
+            else if (d == 'left') {
+                const p = V.addY(pos, size.y * fac)
+                trianglePos = [
+                    V.addY(p, -tickSize/2),
+                    V.addX(p, -tickSize),
+                    V.addY(p, tickSize/2)
+                ]
+            }
+            else if (d == 'bottom') {
+                const p = V.add(pos, vec(size.x * fac, size.y))
+                trianglePos = [
+                    V.addX(p, -tickSize/2),
+                    V.addY(p, tickSize),
+                    V.addX(p, tickSize/2)
+                ]
+            }
+            else if (d == 'right') {
+                const p = V.add(pos, vec(size.x, size.y * fac))
+                trianglePos = [
+                    V.addY(p, -tickSize/2),
+                    V.addX(p, tickSize),
+                    V.addY(p, tickSize/2)
+                ]
+            }
+
+            trianglePos!.forEach(p => gc.lineTo(p.x, p.y))
         }
-        else if (d == 'left') {
-            const p = V.addY(pos, size.y * fac)
-            trianglePos = [
-                V.addY(p, -tickSize/2),
-                V.addX(p, -tickSize),
-                V.addY(p, tickSize/2)
-            ]
-        }
-        else if (d == 'bottom') {
-            const p = V.add(pos, vec(size.x * fac, size.y))
-            trianglePos = [
-                V.addX(p, -tickSize/2),
-                V.addY(p, tickSize),
-                V.addX(p, tickSize/2)
-            ]
-        }
-        else if (d == 'right') {
-            const p = V.add(pos, vec(size.x, size.y * fac))
-            trianglePos = [
-                V.addY(p, -tickSize/2),
-                V.addX(p, tickSize),
-                V.addY(p, tickSize/2)
-            ]
+
+        gc.beginPath()
+
+        if (r === 0) {
+            gc.moveTo(x,y)
+            if (options.tickDirection === 'top') paintTick()
+            gc.lineTo(x + w, y)
+            if (options.tickDirection === 'right') paintTick()
+            gc.lineTo(x + w, y + h)
+            if (options.tickDirection === 'bottom') paintTick()
+            gc.lineTo(x, y + h)
+            if (options.tickDirection === 'left') paintTick()
         }
 
-        trianglePos!.forEach(p => gc.lineTo(p.x, p.y))
+        else {
+            if (w < 2 * r) r = w / 2
+            if (h < 2 * r) r = h / 2
+            gc.moveTo(x+r, y)
+            if (options.tickDirection === 'top') paintTick()
+            gc.arcTo(x+w, y,   x+w, y+h, r)
+            if (options.tickDirection === 'right') paintTick()
+            gc.arcTo(x+w, y+h, x,   y+h, r)
+            if (options.tickDirection === 'bottom') paintTick()
+            gc.arcTo(x,   y+h, x,   y,   r)
+            if (options.tickDirection === 'left') paintTick()
+            gc.arcTo(x,   y,   x+w, y,   r)
+        }
+
+        setBackgroundStyle(gc, options, pos, V.add(pos, size))
+
+        gc.fill()
+
+        if (options.paintBorder === true) gc.stroke()
+
+        gc.setLineDash([])
     }
-
-    gc.beginPath()
-
-    if (r === 0) {
-        gc.moveTo(x,y)
-        if (options.tickDirection === 'top') paintTick()
-        gc.lineTo(x + w, y)
-        if (options.tickDirection === 'right') paintTick()
-        gc.lineTo(x + w, y + h)
-        if (options.tickDirection === 'bottom') paintTick()
-        gc.lineTo(x, y + h)
-        if (options.tickDirection === 'left') paintTick()
-    }
-
-    else {
-        if (w < 2 * r) r = w / 2
-        if (h < 2 * r) r = h / 2
-        gc.moveTo(x+r, y)
-        if (options.tickDirection === 'top') paintTick()
-        gc.arcTo(x+w, y,   x+w, y+h, r)
-        if (options.tickDirection === 'right') paintTick()
-        gc.arcTo(x+w, y+h, x,   y+h, r)
-        if (options.tickDirection === 'bottom') paintTick()
-        gc.arcTo(x,   y+h, x,   y,   r)
-        if (options.tickDirection === 'left') paintTick()
-        gc.arcTo(x,   y,   x+w, y,   r)
-    }
-
-    gc.closePath()
-
-    setBackgroundStyle(gc, options, pos, V.add(pos, size))
-
-    gc.fill()
-
-    if (options.paintBorder === true) gc.stroke()
-
-    gc.setLineDash([])
 }
 
 // Label
@@ -297,13 +332,17 @@ const LabelOptionsDefault: LabelOptionsI = {
     gapBetweenLines: 5
 }
 
-export type PaintToolTypesE = 'LABEL' | 'TABLE'
-
 export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
     let options: LabelOptionsI = {
         ...LabelOptionsDefault,
         ...opt
     }
+
+    const fontSize = (options.fSize!)
+
+    options.gapBetweenLines = options.gapBetweenLines!
+
+    gc.font = fontSize + 'px ' + options.fFamily!
 
     const givenText = options.maxTextLength ? wrap(options.text!, {
         width: options.maxTextLength!
@@ -319,12 +358,11 @@ export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
         if (lLength > maxWidth) maxWidth = lLength
     })
 
-    const summedLineHeight = lines.length * options.fSize!
-    const summedLineGap = lines.length > 1 ? (lines.length - 1) * gapBetweenLines : 0
+    const summedLineHeight = lines.length * fontSize
     
-    const maxHeight = summedLineHeight + summedLineGap
+    const maxHeight = summedLineHeight + ((lines.length - 1) * gapBetweenLines)
 
-    options.size = vec(maxWidth + 2*options.bPadding!, maxHeight + 2*options.bPadding!)
+    options.size = pixelToUnit(vec(maxWidth + 2*options.bPadding!.x, maxHeight + 2*options.bPadding!.y), options.transform!)
 
     transformRect(gc, options, (gc, pos, size) => {
         paintBackroundArea(gc, {...options, pos: pos, size: size})
@@ -333,16 +371,117 @@ export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
         gc.textAlign = 'left'
 
         gc.fillStyle = options.fColor!
-        gc.font = options.fFamily! + ' ' + options.fSize! + 'px'
 
         for (let i = 0; i < lines.length; i++) {
             gc.fillText(
                 lines[i], 
-                pos.x + options.bPadding!,
-                pos.y + options.bPadding! + 2 + i * (options.fSize! + gapBetweenLines)
+                pos.x + options.bPadding!.x,
+                pos.y + options.bPadding!.y + i * (options.fSize! + gapBetweenLines)
             )
         }
-    }, 1)
+    }, undefined, 1)
+}
+
+// Table
+
+export interface TableOptionsI extends PaintFontI, PaintBackroundI, PaintGeoI {
+    heading?: string,
+    valuesMap?: [string, string][],
+    hfColor?: string,
+    gapBetweenLines?: number,
+    vGap?: number,
+    hGap?: number,
+    vfColor?: string
+}
+
+const TableOptionsDefault: TableOptionsI = {
+    ...PaintBackroundDefault,
+    ...PaintFontDefault,
+    ...PaintGeoDefault,
+    heading: 'No heading specified!',
+    valuesMap: [],
+    hfColor: 'yellow',
+    hGap: 10,
+    vGap: 5,
+    vfColor: 'lightyellow'
+}
+
+export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
+    const options = {
+        ...TableOptionsDefault,
+        ...opt
+    }
+
+    const hfSize = options.fSize! * 1.1
+    const hvGap = options.vGap! * 1.5
+
+    const hFont = 'bold ' + hfSize + 'px ' + options.fFamily!
+    const tFont = 'normal ' + options.fSize! + 'px ' + options.fFamily!
+
+    gc.font = hFont
+    const hWidth = gc.measureText(options.heading!).width
+
+    gc.font = tFont
+
+    let longestKey = 0
+    let longestValue = 0
+
+    options.valuesMap!.forEach(pair => {
+        const kLength = gc.measureText(pair[0]).width
+        const vLength = gc.measureText(pair[1]).width
+
+        if (kLength > longestKey) longestKey = kLength
+        if (vLength > longestValue) longestValue = vLength
+    })
+
+    const mapWidth = longestKey + options.hGap! + longestValue
+    const maxWidth = 2*options.bPadding!.x + (mapWidth > hWidth ? mapWidth : hWidth)
+    const maxHeight = 2*options.bPadding!.y + hfSize + options.valuesMap!.length * (options.fSize! + options.vGap!) + (hvGap - options.vGap!)
+
+    transformRect(gc, {
+        ...options,
+        size: pixelToUnit(vec(maxWidth, maxHeight), options.transform!)
+    }, (gc, pos, size) => {
+        paintBackroundArea(gc, {...options, pos: pos, size: size})
+
+        gc.textBaseline = 'top'
+        gc.textAlign = 'left'
+
+        gc.fillStyle = options.hfColor!
+        gc.font = hFont
+
+        gc.fillText(
+            options.heading!, 
+            options.bPadding!.x + pos.x,
+            options.bPadding!.y + pos.y
+        )
+
+        gc.fillStyle = options.vfColor!
+        gc.font = tFont
+
+        const mapPos = vec(
+            options.bPadding!.x + pos.x,
+            options.bPadding!.y + hfSize + hvGap + pos.y
+        )
+
+        for (let i = 0; i < options.valuesMap!.length; i ++) {
+            const yPos = mapPos.y + i * (options.vGap! + options.fSize!)
+            
+            gc.fillStyle = options.fColor!
+            gc.fillText(
+                options.valuesMap![i][0], 
+                mapPos.x,
+                yPos
+            )
+
+            gc.fillStyle = options.vfColor!
+            gc.fillText(
+                options.valuesMap![i][1], 
+                mapPos.x + longestKey + options.hGap!,
+                yPos
+            )
+        }
+    }, undefined, 1)
 }
 
 // Image
