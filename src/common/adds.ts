@@ -47,3 +47,8 @@ export function migrateObjectData<T extends IDable>(arr: T[], migratingArray: T[
         return replacement ? replacement : r
     })
 }
+
+export function getFromArrayMap<K,V>(list: [K,V][], key: K): V | undefined {
+    const res = list.find(o => o[0] === key)
+    return res ? res[1] : undefined
+}

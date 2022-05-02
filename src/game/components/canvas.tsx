@@ -8,10 +8,9 @@ import { ClientMouseI, VectorI } from "../../common/declarations";
 import { paintPoint } from "../paint/paint_addons";
 import { screenToWorld, worldToScreen } from "../paint/paint_tools";
 import { getImage } from "../paint/images";
+import { debugWorld } from "../..";
 
-export class RocketCanvas extends React.Component<{
-    debugWorld?: PaintGameWorldI
-}, {
+export class RocketCanvas extends React.Component<{}, {
     width: number,
     height: number
 }, {}> {
@@ -47,6 +46,7 @@ export class RocketCanvas extends React.Component<{
             height: 0
         }
         RocketCanvas.instance = this
+        console.log("CANVAS INITIALIZED")
     }
 
     private init() {
@@ -158,8 +158,8 @@ export class RocketCanvas extends React.Component<{
 
         setSizes()
 
-        this.worldData = this.props.debugWorld
-        this.startPaintLoop()
+        this.worldData = debugWorld
+        //this.startPaintLoop()
     }
 
     stopPaintLoop() { this.inPaintLoop = false }

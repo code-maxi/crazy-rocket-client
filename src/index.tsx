@@ -54,17 +54,21 @@ loadImages([
 console.log('Starting Client on url "' + window.location.href + '" ...')
 
 const url = new URL(window.location.href)
-const search = new URLSearchParams(url.search)
+export const search = new URLSearchParams(url.search)
+
 const prevGalaxy = search.get('galaxy')
 const name = search.get('name')
+
 const autoJoinTeam = search.get('autojointeam')
-const debugCanvas = search.get('debug-canvas')
+
+export const debugGame = search.get('debug-game') === 'on'
+export const debugShop = search.get('debug-shop-data') === 'on'
 
 console.log('Galaxy-Parameter: ' + prevGalaxy)
 
-if (prevGalaxy && debugCanvas !== 'on') new SocketUser('ws://localhost:1234/socket', prevGalaxy)
+if (prevGalaxy && !debugGame) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
-const debugWorld: PaintGameWorldI = {
+export const debugWorld: PaintGameWorldI = {
   objects: [
     {
       paintType: 'ASTEROID',
@@ -95,10 +99,9 @@ const debugWorld: PaintGameWorldI = {
 ReactDOM.render(
     <React.StrictMode>
         <GalaxyRootGUI 
-          noGalaxySpecifyed={ prevGalaxy === null }
+          noGalaxySpecifyed={prevGalaxy === null}
           name={name} 
           autoJoinTeam={autoJoinTeam}
-          debugWorld={(debugCanvas === 'on') ? debugWorld : undefined}
         />
     </React.StrictMode>,
     document.getElementById('root')

@@ -1,10 +1,11 @@
 import React from "react";
+import { debugGame } from "../..";
 import { PaintGameWorldI } from "../paint/paint_declarations";
-import { RocketCanvas } from "./canvas";
+import { CrazyWorld } from "./crazyworld";
 import { GalaxyLogin, GalaxyLoginPropsI } from "./galaxy-login"
 
 interface GalaxyRootStateI {
-    displayType: 'login' | 'canvas'
+    displayType: 'login' | 'game'
 }
 
 interface GalaxyRootGUIPropsI extends GalaxyLoginPropsI {
@@ -16,17 +17,17 @@ export class GalaxyRootGUI extends React.Component<GalaxyRootGUIPropsI, GalaxyRo
     
     constructor(p: any) {
         super(p)
-        this.state = { displayType: 'login' }
+        this.state = { displayType: 'game' }
         GalaxyRootGUI.instance = this
     }
 
-    setCanvasDisplay() { this.setState({ ...this.state, displayType: 'canvas' }) }
+    setCanvasDisplay() { this.setState({ ...this.state, displayType: 'game' }) }
 
     render(): React.ReactNode {
         return (
             (this.state.displayType === 'login' && !this.props.debugWorld) ? 
                 <GalaxyLogin { ...this.props } />
-                : <RocketCanvas debugWorld={this.props.debugWorld} />
+                : <CrazyWorld />
         )
     }
 }
