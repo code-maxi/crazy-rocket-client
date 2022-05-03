@@ -1,6 +1,7 @@
 import { Badge, Button, Card, ListGroup, ListGroupItem, Stack } from "react-bootstrap";
 import { GoodsContainerI, GoodsHelper, RocketDescriptionI, RocketOnBoardI, RocketTypeE } from "../../../decl";
 import { FinalGameData } from "../../../final-game-data";
+import { CrazyTableList } from "../../helpers/component-adds";
 
 export function CrazyBaseRocketTab(props: {
     userId: string,
@@ -33,9 +34,9 @@ export function CrazyBaseRocketTab(props: {
 
 function rocketDescriptionToPropsList(des: RocketDescriptionI): string[][] {
     return [
-        ...des.props.cost.amounts.filter(a => a[1] !== 0).map(a => [''+a[0]+' Price', ''+a[1]+' u3', 'secondary']),
         ['Cargo Area Space', ''+des.props.cargoAreaSpace+' u3', 'primary'],
-        ['Mass', ''+des.props.mass+' t', 'primary']
+        ['Mass', ''+des.props.mass+' t', 'primary'],
+        ...des.props.cost.amounts.filter(a => a[1] !== 0).map(a => [''+a[0]+' Price', ''+a[1]+' u3', 'secondary']),
     ]
 }
 
@@ -61,18 +62,14 @@ function RocketTypeCard(props: {
 
             <ListGroup className="list-group-flush mt-1 mb-3">
                 {
-                    [
-                        ...rocketDescriptionToPropsList(props.description),
-                        ['Free Rockets on Board', ''+props.freeRockets, (props.freeRockets === 0 ? 'danger' : 'success')]
-                    ].map(it => {
-                        console.log('render it[3]:' + it[2])
-                        return <ListGroupItem className="bg-dark text-light">
-                            <div className="d-flex justify-content-between">
-                                <span className="fs-6">{it[0]}</span>
-                                <span className="fs-5"><Badge bg={it[2]}>{it[1]}</Badge></span>
-                            </div>
-                        </ListGroupItem>
-                    })
+                    <CrazyTableList
+                        items={
+                            [
+                                ['Free Rockets on Board', ''+props.freeRockets, (props.freeRockets === 0 ? 'danger' : 'success')],
+                                ...rocketDescriptionToPropsList(props.description)
+                            ]
+                        }
+                    />
                 }
             </ListGroup>
 

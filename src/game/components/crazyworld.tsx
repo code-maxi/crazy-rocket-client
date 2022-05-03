@@ -32,35 +32,35 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                     humanCategories: [
                         {
                             id: 'Children',
-                            numberOfHuman: 234,
+                            numberOfHuman: 1,
                             ageStart: 4,
                             ageEnd: 17,
                             weight: 13
                         },
                         {
                             id: 'Baby',
-                            numberOfHuman: 213,
+                            numberOfHuman: 0,
                             ageStart: 0,
                             ageEnd: 3,
                             weight: 12
                         },
                         {
                             id: 'Young Adults',
-                            numberOfHuman: 542,
+                            numberOfHuman: 0,
                             ageStart: 18,
                             ageEnd: 39,
                             weight: 13
                         },
                         {
                             id: 'Older Adults',
-                            numberOfHuman: 234,
+                            numberOfHuman: 0,
                             ageStart: 40,
                             ageEnd: 59,
                             weight: 13
                         },
                         {
                             id: 'Grand parents',
-                            numberOfHuman: 234,
+                            numberOfHuman: 0,
                             ageStart: 60,
                             ageEnd: 200,
                             weight: 13
@@ -74,14 +74,74 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                     {
                         type: BaseExtensionTypeE.CARGO_AREA,
                         reservedSpace: 12,
+                        name: 'C1',
                         maxSpace: 20,
-                        unit: 'u3'
+                        unit: 'u3',
+                        place: 0,
+                        broken: true
                     },
                     {
                         type: BaseExtensionTypeE.HUMAN_AREA,
                         reservedSpace: 123,
                         maxSpace: 145,
-                        unit: ''
+                        unit: '',
+                        name: 'H1',
+                        place: 180,
+                        broken: false
+                    },
+                    {
+                        type: BaseExtensionTypeE.CARGO_AREA,
+                        reservedSpace: 12,
+                        maxSpace: 20,
+                        name: 'C2',
+                        unit: 'u3',
+                        place: 90,
+                        broken: false
+                    },
+                    {
+                        type: BaseExtensionTypeE.HUMAN_AREA,
+                        reservedSpace: 123,
+                        name: 'H2',
+                        maxSpace: 145,
+                        unit: '',
+                        place: 270,
+                        broken: true
+                    },
+                    {
+                        type: BaseExtensionTypeE.HUMAN_AREA,
+                        reservedSpace: 123,
+                        maxSpace: 145,
+                        unit: '',
+                        name: 'H1',
+                        place: 45,
+                        broken: false
+                    },
+                    {
+                        type: BaseExtensionTypeE.CARGO_AREA,
+                        reservedSpace: 12,
+                        maxSpace: 20,
+                        name: 'C2',
+                        unit: 'u3',
+                        place: 135,
+                        broken: false
+                    },
+                    {
+                        type: BaseExtensionTypeE.HUMAN_AREA,
+                        reservedSpace: 123,
+                        name: 'H2',
+                        maxSpace: 145,
+                        unit: '',
+                        place: 225,
+                        broken: true
+                    },
+                    {
+                        type: BaseExtensionTypeE.HUMAN_AREA,
+                        reservedSpace: 123,
+                        name: 'H2',
+                        maxSpace: 145,
+                        unit: '',
+                        place: 315,
+                        broken: true
                     }
                 ],
                 warningAlerts: [
@@ -112,7 +172,9 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                         numberOf: 0,
                         selectedUsers: []
                     }
-                ]
+                ],
+                isRingBuilded: true,
+                isInterceptionActivated: true
             }
         }
         CrazyWorld.instance = this

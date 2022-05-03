@@ -332,7 +332,7 @@ function RocketTeamList(p: {
     return <ListGroup variant="flush" className='mb-4'>
         {
             p.galaxy.teams.map(team => 
-                <ListGroup.Item className={'mb-2 rounded text-white bg-' + bootTeamColor(team.props.color)}>
+                <ListGroup.Item key={team.props.color} className={'mb-2 rounded text-white bg-' + bootTeamColor(team.props.color)}>
                     <Stack direction="horizontal" className="align-items-center" gap={3}>
                         <p className="fs-5 mb-0">Team {team.props.name}</p>
                         <p className="fs-7 mb-0">

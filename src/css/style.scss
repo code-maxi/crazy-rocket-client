@@ -49,3 +49,9 @@ html, body {
 .team-item-color-yellow {
     background-color: lightyellow;
 }
+
+.crazy-base-extend-card {
+    &:hover {
+        border: solid 1px grey;
+    }
+}

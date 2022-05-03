@@ -1,9 +1,6 @@
-import { CrazyGoodE, createGoods, RocketDescriptionI, RocketTypeE } from "./decl"
+import { CrazyGoodE, createGoods, FinalGameDataI, RocketDescriptionI, RocketTypeE } from "./decl"
 
-export let FinalGameData: {
-    rocketDescriptons?: RocketDescriptionI[],
-    introductionText?: string
-} = {
+export let FinalGameData: FinalGameDataI = {
     rocketDescriptons: [
         {
             type: RocketTypeE.X_WING,
@@ -65,5 +62,6 @@ export let FinalGameData: {
                 mass: 42
             }
         }
-    ]
+    ],
+    baseRingToCenter: 5
 }

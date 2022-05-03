@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge, ListGroup } from "react-bootstrap";
+import { Badge, Button, Card, ListGroup, Stack } from "react-bootstrap";
 
 export function CrazyBlockquote(props: {
     style?: string,
@@ -22,7 +22,7 @@ export function CrazyTableList(props: {
     return <div className="d-flex flex-column">
         {
             props.items.map((i, index) => (
-                <div className={"d-flex p-2 flex-row justify-content-between align-items-center bg-dark text-light" + (index === props.items.length-1 ? '' : ' border-bottom border-secondary')}>
+                <div key={index} className={"d-flex p-2 flex-row justify-content-between align-items-center bg-dark text-light" + (index === props.items.length-1 ? '' : ' border-bottom border-secondary')}>
                     <span>{i[0]}</span>
                     
                     <span className={'fw-bold ' + (i[2] ? 'fs-5' : 'fs-6')}>
@@ -51,11 +51,66 @@ export function Alert(props: {
     const icon = alertVariantIcons.get(props.variant)
     return <div 
         className={'d-flex bg-opacity-50 align-items-start flex-row px-3 py-2 rounded bg-' + props.variant + (props.classNames ? ' '+props.classNames : '')}
-        style={{ width: 'max-content' }}
+        style={{ maxWidth: 'max-content' }}
     >
         { icon }
         <div>
             { props.children }
         </div>
     </div>
+}
+
+interface CrazyCardButtonI {
+    spaceToTheLeft?: boolean,
+    disabled?: boolean,
+    text: string,
+    style?: string,
+    checkIcon?: boolean,
+    onClick: () => void
+}
+
+export function CrazyToggleButton(props: {
+    text: string,
+    toggled: string,
+    variant: string,
+    onToggle: (t: boolean) => void
+    classNames?: string,
+    toggleCheck?: boolean
+}) {
+    return <Button 
+        className={props.classNames} 
+        variant={(props.toggled ? '' : 'outlined-') + props.variant}
+        onClick={() => props.onToggle(!props.toggled)}
+    >
+        {props.toggleCheck === true && props.toggled ? <svg className="me-2 bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/></svg> : undefined}
+        {props.text}
+    </Button>
+}
+
+export function CrazyCard(props: {
+    title: string,
+    text: string,
+    classNames?: string,
+    width?: string,
+    children?: React.ReactNode,
+    onHover?: (on: boolean) => void,
+    img?: string
+}) {
+    return <Card 
+        onMouseEnter={() => {if (props.onHover) props.onHover(true)}} 
+        onMouseLeave={() => {if (props.onHover) props.onHover(false)}}
+        style={{ width: props.width }}
+        className={"bg-dark text-light shadow-lg" + (props.classNames ? ' '+props.classNames : '')}
+    >
+        {props.img ? <Card.Img variant="top" src={props.img} /> : undefined}
+
+        <Card.Body>
+            <Card.Title>{props.title}</Card.Title>
+            <Card.Text>
+                {props.text}
+            </Card.Text>
+
+            {props.children}
+        </Card.Body>
+    </Card>
 }

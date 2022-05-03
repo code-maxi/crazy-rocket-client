@@ -30,6 +30,7 @@ export function CrazyBaseTransferTab(props: {
                     values={values}
                     maxValues={maxValues}
                     type={t}
+                    key={t}
                     transferData={props.transferData}
                 />
             })

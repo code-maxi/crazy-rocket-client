@@ -4,6 +4,7 @@ import { CrazyBaseStateI, GoodsHelper } from "../../../decl"
 import React from 'react';
 import { CrazyPieChart } from "../../helpers/crazy-charts"
 import { Alert, CrazyTableList } from '../../helpers/component-adds';
+import { BaseConstructionCanvas } from '../base-construction-canvas';
 
 interface PieDataI {
     labels: string[],
@@ -27,16 +28,25 @@ export function CrazyBaseOverviewTab(props: {
         style={{ maxWidth: '700px' }}
     >
         <Row>
-            <Col xs="auto" className="mb-5 pe-3">
+            <Col xs={12} sm={7} className="mb-5">
+                <h4>Base Construction</h4>
+                <BaseConstructionCanvas
+                    baseState={props.baseState}
+                    size={350}
+                />
+            </Col>
+
+            <Col xs={12} sm={5} className="mb-5 pe-5">
                 <h4 className='mb-4'>Warning Messages</h4>
-                <Stack gap={2}>
+                <Stack gap={3}>
                     {
-                        props.baseState.warningAlerts.map(wa => <Alert variant="danger">
+                        props.baseState.warningAlerts.map((wa,i) => <Alert key={i} variant="danger">
                             {wa}
                         </Alert>)
                     }
                 </Stack>
             </Col>
+
         </Row>
 
         <Row>
@@ -74,8 +84,8 @@ export function CrazyBaseOverviewTab(props: {
                     classNames="mb-3"
                     items={
                         [
-                            ['All Goods', ''+numberOfAllGoods, 'primary'],
-                            ...props.baseState.goods.amounts.map(a => [''+a[0], ''+a[1]+'u3', 'secondary'])
+                            ['All Goods', ''+numberOfAllGoods+' u3', 'primary'],
+                            ...props.baseState.goods.amounts.map(a => [''+a[0], ''+a[1]+' u3', 'secondary'])
                         ]
                     }
                 />

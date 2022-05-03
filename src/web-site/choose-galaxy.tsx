@@ -8,18 +8,18 @@ export function GalaxyList(p: {
 }) {
     return <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
         {
-            p.list.map(g => <ListItem
+            p.list.map(g => <ListItem key={g.props.name}
                 secondaryAction={
                     <Button startIcon={<ArrowForwardRoundedIcon/>}>Join</Button>
                 }
             >
                 <ListItemAvatar>
                     <Avatar>
-                        { g.params.name.substring(0,1).toUpperCase() }
+                        { g.props.name.substring(0,1).toUpperCase() }
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText 
-                    primary={g.params.name} 
+                    primary={g.props.name} 
                     secondary={'People: ' + g.users.map(u => u.name).join(", ")} 
                 />
             </ListItem>)

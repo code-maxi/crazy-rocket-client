@@ -2,7 +2,7 @@ import { getFromArrayMap } from "../common/adds"
 import { sumArray } from "./other-adds"
 
 export enum CrazyGoodE {
-    FOOD = "FOOL",
+    FOOD = "FOOD",
     ENERGY = "ENERGY",
     GOLD = "GOLD",
     ROCKS = "ROCKS",
@@ -95,7 +95,10 @@ export interface BaseExtensionI {
     type: BaseExtensionTypeE,
     reservedSpace: number,
     maxSpace: number,
-    unit: string
+    name: string,
+    broken: boolean,
+    unit: string,
+    place: number // between 0 and 100
 }
 
 export interface RocketOnBoardI {
@@ -109,9 +112,17 @@ export interface CrazyBaseStateI {
     goods: GoodsContainerI,
     human: HumanContainerI,
     extensions: BaseExtensionI[],
+    isRingBuilded: boolean,
+    isInterceptionActivated: boolean,
     warningAlerts: string[],
     name: string,
     maxHumanSpace: number,
     maxObjectSpace: number,
     rocketsOnBoard: RocketOnBoardI[]
+}
+
+export interface FinalGameDataI {
+    rocketDescriptons?: RocketDescriptionI[],
+    introductionText?: string,
+    baseRingToCenter: number
 }
