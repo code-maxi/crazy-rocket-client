@@ -1,5 +1,4 @@
 import { CrazyCard, CrazyTableList } from "../../helpers/component-adds";
-import { Card, ListGroup, ListGroupItem, Container, Button, Row, Col } from "react-bootstrap";
 import { CrazyBaseStateI } from "../../../decl";
 import { BaseConstructionCanvas, SelectedObjectT } from "../base-construction-canvas";
 import React from "react";
@@ -24,7 +23,13 @@ export function CrazyBaseExtendTab(props: {
                 console.log('Cargo Area on hover: ' + b)
                 setSelectedObject(b ? 'cargo-area' : undefined)
             }}
-        >
+        > {
+            <CrazyTableList
+                items={[
+                    
+                ]}
+            />
+        }
 
         </CrazyCard>
 

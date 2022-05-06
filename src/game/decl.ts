@@ -71,7 +71,7 @@ export interface HumanContainerI {
     weightOfAll: number
 }
 
-export enum BaseExtensionTypeE { CARGO_AREA, HUMAN_AREA }
+export enum BaseExtensionTypeE { CARGO_AREA = "CARGO_AREA", HUMAN_AREA = "HUMAN_AREA" }
 export enum RocketTypeE { 
     X_WING, 
     STERNZERSTOERER, 
@@ -125,4 +125,49 @@ export interface FinalGameDataI {
     rocketDescriptons?: RocketDescriptionI[],
     introductionText?: string,
     baseRingToCenter: number
+}
+
+// Chat
+
+export enum MessageVariantTypeE {
+    DANGER = 'danger',
+    INFO = 'info',
+    WARNING = 'warning',
+    SECONDARY = 'secondary',
+    SUCCESS = 'success'
+}
+
+export interface MessageDataI {
+    ownerName: string,
+    ownerId: string,
+    text: string,
+    type: MessageVariantTypeE | null
+    dangerIcon: boolean
+}
+
+export interface MessageContainerI {
+    messages: MessageDataI[]
+}
+
+// Teams
+
+export interface CrazyUserI {
+    id: string,
+    team: string,
+    name: string,
+    galaxy: string
+}
+
+export interface CrazyTeamStateI {
+    color: string,
+    recuedPeople: number,
+    users: CrazyUserI,
+    baseStates: CrazyBaseStateI[]
+}
+
+export interface CrazyRocketState {
+    weight: number,
+    speedInKmH: number,
+    goods: number,
+    human: HumanContainerI
 }

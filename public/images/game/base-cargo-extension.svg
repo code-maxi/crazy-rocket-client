@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="base-cargo-extension.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="0.70214844"
+     inkscape:cx="-6.4089013"
+     inkscape:cy="403.04868"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect1092"
+       is_visible="true"
+       lpeversion="1"
+       satellites_param="F,0,0,1,0,20,0,1 @ F,0,0,1,0,20,0,1 @ F,0,0,1,0,20,0,1 @ F,0,0,1,0,20,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="20"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient964">
+      <stop
+         style="stop-color:#211d1d;stop-opacity:1"
+         offset="0"
+         id="stop960" />
+      <stop
+         style="stop-color:#8b8b8b;stop-opacity:1"
+         offset="0.49692667"
+         id="stop4243" />
+      <stop
+         style="stop-color:#4a4a4a;stop-opacity:1"
+         offset="1"
+         id="stop962" />
+    </linearGradient>
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect928"
+       is_visible="true"
+       lpeversion="1"
+       satellites_param="F,0,0,1,0,50,0,1 @ F,0,0,1,0,50,0,1 @ F,0,0,1,0,50,0,1 @ F,0,0,1,0,50,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="50"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient964"
+       id="linearGradient966"
+       x1="7.2576585"
+       y1="252.58351"
+       x2="7.2576585"
+       y2="7.2576585"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.98948844,0,0,1.0051021,-1.1520385,-1.2653521)" />
+  </defs>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:url(#linearGradient966);fill-opacity:1;stroke:#000000;stroke-width:12;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect846"
+       width="500.17136"
+       height="246.57741"
+       x="6.0293307"
+       y="6.0293307"
+       inkscape:path-effect="#path-effect928"
+       d="M 56.029331,6.0293307 H 456.20069 a 50,50 45 0 1 50,50.0000003 V 202.60674 a 50,50 135 0 1 -50,50 H 56.029331 a 50,50 45 0 1 -50.0000003,-50 V 56.029331 A 50,50 135 0 1 56.029331,6.0293307 Z"
+       sodipodi:type="rect"
+       inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-cargo-extension.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <circle
+       style="fill:#ababab;fill-opacity:1;stroke:#000000;stroke-width:6.3888;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:6.3888, 6.3888;stroke-dashoffset:0;stroke-opacity:1"
+       id="circle7131"
+       cx="159.83598"
+       cy="130.58813"
+       r="30.290567"
+       inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-cargo-extension.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <circle
+       style="fill:#ababab;fill-opacity:1;stroke:#000000;stroke-width:6.3888;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:6.3888, 6.3888;stroke-dashoffset:0;stroke-opacity:1"
+       id="circle7135"
+       cx="262.06229"
+       cy="130.58813"
+       r="30.290567"
+       inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-cargo-extension.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <circle
+       style="fill:#ababab;fill-opacity:1;stroke:#000000;stroke-width:6.3888;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:6.3888, 6.3888;stroke-dashoffset:0;stroke-opacity:1"
+       id="circle7137"
+       cx="364.28851"
+       cy="130.58813"
+       r="30.290567"
+       inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-cargo-extension.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+  </g>
+</svg>

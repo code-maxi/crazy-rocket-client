@@ -131,6 +131,9 @@ export const V = {
     addX(a: VectorI, s: number): VectorI { return { x: a.x + s, y: a.y } },
     addY(a: VectorI, s: number): VectorI { return { x: a.x, y: a.y + s } },
     
+    mirrorX(a: VectorI) { return vec(-a.x, a.y)  },
+    mirrorY(a: VectorI) { return vec(a.x, -a.y)  },
+
     negate(a: VectorI) { return vec(-a.x, -a.y) },
 
     addAll(v: VectorI[]) {
@@ -141,6 +144,7 @@ export const V = {
 
     normalRight(v: VectorI): VectorI { return { x: v.y, y: -v.x } },
     e(v: VectorI): VectorI { return this.mul(v, 1/this.length(v)) },
+    el(v: VectorI, l: number) { return this.mul(this.e(v), l) },
 
     square(a: number): VectorI { return { x:a,y:a } },
     scalarProduct(a: VectorI, b: VectorI) { return a.x*b.x + a.y*b.y },

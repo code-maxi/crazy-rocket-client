@@ -1,4 +1,4 @@
-import { GamePaintDataI, PaintTransformI } from "./paint_declarations";
+import { GameObjectPaintDataI, PaintTransformI } from "./paint_declarations";
 import { V, vec } from "../../common/math";
 import { VectorI } from "../../common/declarations";
 import { paintObject } from "./paint_helpers";

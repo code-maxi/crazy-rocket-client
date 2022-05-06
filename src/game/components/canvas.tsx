@@ -3,7 +3,7 @@ import { keyListen } from "../keybord";
 import { MapConfig, rocketMapHelper } from "./map";
 import { V, vec } from "../../common/math";
 import { PaintGameWorldI, PaintTransformI } from "../paint/paint_declarations"
-import { paintObject } from "../paint/paint_helpers"
+import { paintObject, paintObjectsSorted } from "../paint/paint_helpers"
 import { ClientMouseI, VectorI } from "../../common/declarations";
 import { paintPoint } from "../paint/paint_addons";
 import { screenToWorld, worldToScreen } from "../paint/paint_tools";
@@ -26,7 +26,8 @@ export class RocketCanvas extends React.Component<{}, {
         eye: V.zero(),
         scaling: 1.0,
         unitToPixel: 50.0,
-        canvasSize: V.zero()
+        canvasSize: V.zero(),
+        wholeScaling: 0
     }
 
     private lastEye: VectorI = vec(0,0)
@@ -159,7 +160,7 @@ export class RocketCanvas extends React.Component<{}, {
         setSizes()
 
         this.worldData = debugWorld
-        //this.startPaintLoop()
+        this.startPaintLoop()
     }
 
     stopPaintLoop() { this.inPaintLoop = false }
@@ -178,18 +179,17 @@ export class RocketCanvas extends React.Component<{}, {
 
             this.transform = {
                 ...this.transform,
-                canvasSize: canvasSize
+                canvasSize: canvasSize,
+                wholeScaling: this.transform.scaling * this.transform.unitToPixel
             }
 
-            const sortedObjects = currentWorld.objects.sort(o => o.zIndex ? o.zIndex : 0)
-
-            sortedObjects.forEach(o => paintObject(o, gc, this.transform))
-
-            if (this.mouse) paintPoint(gc, worldToScreen(this.mouse.pos, this.transform), 'red', 5)
+            paintObjectsSorted(currentWorld.objects, gc, this.transform)
         }
 
 
-        if (this.inPaintLoop) requestAnimationFrame(() => this.paint())
+        if (this.inPaintLoop) setTimeout(() => {
+            requestAnimationFrame(() => this.paint())
+        }, 10)
 
         /*g.fillStyle = "black"
         g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)

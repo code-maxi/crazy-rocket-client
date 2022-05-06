@@ -48,7 +48,7 @@ export function CrazyBaseModal(props: CrazyBaseModalI) {
             fullscreen="lg-down"
         >
 
-        <Modal.Header className="bg-dark text-light">
+        <Modal.Header >
             <div className="d-flex justify-content-between w-100 align-items-center">
                 <h4 style={{ minWidth: '150px' }}><Badge bg="secondary">{tabValue}</Badge></h4>
                 
@@ -63,7 +63,7 @@ export function CrazyBaseModal(props: CrazyBaseModalI) {
             </div>
         </Modal.Header>
 
-        <Modal.Body className="bg-dark text-light overflow-auto" style={{ minHeight: '40vh', height: 'calc(100vh - 200px)', backgroundColor: 'black' }}>
+        <Modal.Body className="overflow-auto" style={{ minHeight: '40vh', height: 'calc(100vh - 200px)', backgroundColor: 'black' }}>
             <div className="d-flex flex-column justify-content-stretch">
                 <CrazyBlockquote addedClassNames='mb-4 align-self-center' maxWidth="550px">
                     {crazyBaseTabIntroduction.get(tabValue)}
@@ -100,7 +100,7 @@ export function CrazyBaseModal(props: CrazyBaseModalI) {
             </div>
         </Modal.Body>
 
-        <Modal.Footer className="bg-dark text-light">
+        <Modal.Footer >
             <ButtonGroup>
                 { Object.values(CrazyBaseModalTab).map(o => (
                     <Button 

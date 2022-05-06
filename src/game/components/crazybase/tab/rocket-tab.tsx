@@ -48,7 +48,7 @@ function RocketTypeCard(props: {
     onSelectRocket: (type: RocketTypeE) => void,
     onBuyRocket: (type: RocketTypeE) => void
 }) {
-    return <Card style={{ width: '22rem' }} className="shadow-lg bg-dark text-light mx-2 mb-4 d-inline">
+    return <Card style={{ width: '22rem' }} className="shadow-lg mx-2 mb-4 d-inline">
         <Card.Img variant="top" src={props.description.img} />
 
         <Card.Body>

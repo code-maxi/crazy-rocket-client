@@ -144,7 +144,7 @@ export class GalaxyLogin extends React.Component<GalaxyLoginPropsI, GalaxyLoginS
                     width: 'max-content',
                     minWidth: '300px',
                     position: 'relative'
-                }} className="shadow-lg bg-dark bg-gradient text-white">
+                }} className="shadow-lg bg-gradient text-white">
                     <img src='images/round-rocket.png' style={{
                         position: 'absolute',
                         top: '-20px',
@@ -203,7 +203,7 @@ export class GalaxyLogin extends React.Component<GalaxyLoginPropsI, GalaxyLoginS
                                 <Button variant="outline-danger" onClick={() => this.endRunGamePassword(false)}>Cancel</Button>
                                 <Form.Control
                                     type="password"
-                                    className="bg-dark text-white border-secondary"
+                                    className="text-white border-secondary"
                                     placeholder="password of the galaxy"
                                     value={ this.state.passwordValue }
                                     onChange={ e => this.setState({
@@ -240,12 +240,12 @@ export class GalaxyLogin extends React.Component<GalaxyLoginPropsI, GalaxyLoginS
                         
                         <Collapse in={ !joined }>
                             <InputGroup className="mb-3" style={{ maxWidth: '400px' }}>
-                                <InputGroup.Text className="bg-dark fs-6 text-white border-secondary" id="basic-addon1">{ BootIcon().USER_ICON }</InputGroup.Text>
+                                <InputGroup.Text className="fs-6 text-white border-secondary" id="basic-addon1">{ BootIcon().USER_ICON }</InputGroup.Text>
                                 <Form.Control
                                     placeholder="Your Nickname for the Game..."
                                     aria-label="Username"
                                     aria-describedby="basic-addon1"
-                                    className="bg-dark text-white fs-6 border-secondary"
+                                    className="text-white fs-6 border-secondary"
                                     value={this.state.nameValue}
                                     onChange={e => {
                                         this.setState({

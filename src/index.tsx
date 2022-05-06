@@ -8,6 +8,8 @@ import { loadImages } from './game/paint/images';
 import { PaintGameWorldI } from './game/paint/paint_declarations';
 import { vec } from './common/math';
 import { worldToScreen } from './game/paint/paint_tools';
+import { BaseExtensionTypeE } from './game/decl';
+import { forIch } from './game/other-adds';
 
 /*
 <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
@@ -48,7 +50,13 @@ loadImages([
     'noimage.png',
     'fire.png',
     'booom.png',
-    'map_this_rocket.png'
+    'map_this_rocket.png',
+    'game/base-cargo-extension.png',
+    'game/base-human-extension.png',
+    'game/base-enter-zone-red.png',
+    'game/base-enter-zone-green.png',
+    'game/base-enter-zone-blue.png',
+    'game/base-enter-zone-yellow.png'
 ])
 
 console.log('Starting Client on url "' + window.location.href + '" ...')
@@ -71,15 +79,55 @@ if (prevGalaxy && !debugGame) new SocketUser('ws://localhost:1234/socket', prevG
 export const debugWorld: PaintGameWorldI = {
   objects: [
     {
-      paintType: 'ASTEROID',
-      pos: vec(2, 2),
+      type: 'BASE',      
+      pos: vec(10,10),
       props: {
-        radius: 2,
-        stability: 30,
-        rotation: 2.345
-      },
-      zIndex: 0
+        name: 'XI%q',
+        enterZoneRadius: 4,
+        outerRingRadius: 8,
+        outerRingRotation: 1.4,
+        interceptionRadius: 20,
+        extensions: forIch(12, i => ({
+          place: 360*(i/12),
+          type: i % 2 === 0 ? BaseExtensionTypeE.HUMAN_AREA : BaseExtensionTypeE.CARGO_AREA,
+          stability: Math.random()
+        })),
+        extensionWidth: 3.5,
+        teamColor: 'YELLOW',
+        tableValues: [
+          ['Team', 'Yellow'],
+          ['GOLD', '12u3'],
+          ['LALA', '70u3'],
+          ['GURU', '40'],
+          ['MEER', '1u3']
+        ]
+      }
     },
+    {
+      type: 'BASE',      
+      pos: vec(25,30),
+      props: {
+        name: 'XI%q',
+        enterZoneRadius: 4,
+        outerRingRadius: 8,
+        outerRingRotation: 1.4,
+        interceptionRadius: 12,
+        extensions: forIch(6, i => ({
+          place: 360*(i/6),
+          type: i % 2 === 0 ? BaseExtensionTypeE.HUMAN_AREA : BaseExtensionTypeE.CARGO_AREA,
+          stability: Math.random()
+        })),
+        extensionWidth: 3.5,
+        teamColor: 'BLUE',
+        tableValues: [
+          ['Team', 'BLUE'],
+          ['GOLD', '12u3'],
+          ['LALA', '70u3'],
+          ['GURU', '40'],
+          ['MEER', '1u3']
+        ]
+      }
+    }
 
     /*{
       paintType: 'ASTEROID',

@@ -1,12 +1,17 @@
 import React from "react";
+import { MessagePanel } from "./chat/message-panel"
 import { debugShop } from "../..";
-import { BaseExtensionTypeE, CrazyBaseStateI, CrazyGoodE, RocketTypeE } from "../decl";
+import { BaseExtensionTypeE, CrazyBaseStateI, CrazyGoodE, MessageDataI, MessageVariantTypeE, RocketTypeE } from "../decl";
 import { RocketCanvas } from "./canvas";
 import {CrazyBaseModal} from "./crazybase/CrazyBaseModal"
+import { CrazyBackdrops } from "./crazy_backdrops"
+import { Button } from "react-bootstrap";
 
 export interface CrazyWorldState {
     showedBaseData?: CrazyBaseStateI
     showBaseDialog: boolean,
+    messages: [MessageDataI, boolean][],
+    messageBoxHeight: number,
     userId: string
 }
 
@@ -175,15 +180,107 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                 ],
                 isRingBuilded: true,
                 isInterceptionActivated: true
-            }
+            },
+            messages: [
+                [{
+                    text: 'Hello, I am a message!',
+                    ownerName: 'Test User',
+                    ownerId: 'u1',
+                    type: null,
+                    dangerIcon: false
+                }, false],
+                [{
+                    text: 'Danger Danger Danger! I am a message!',
+                    ownerName: 'System',
+                    ownerId: 'u2',
+                    type: MessageVariantTypeE.DANGER,
+                    dangerIcon: true
+                }, false],
+                [{
+                    text: 'Hello, I am a message!',
+                    ownerName: 'Test User',
+                    ownerId: 'u1',
+                    type: null,
+                    dangerIcon: false
+                }, true],
+                [{
+                    text: 'Hello, I am a message!',
+                    ownerName: 'Test User',
+                    ownerId: 'u1',
+                    type: null,
+                    dangerIcon: false
+                }, true]
+            ],
+            messageBoxHeight: 400
         }
         CrazyWorld.instance = this
+    }
+
+    addMessages(messages: MessageDataI[]) {
+        this.setState({
+            ...this.state,
+            messages: [
+                ...this.state.messages.map(o => [o[0], false] as [MessageDataI, boolean]),
+                ...messages.map(m => [m, true] as [MessageDataI, boolean])
+            ]
+        })
+    }
+
+    private removeLastMessages(n: number) {
+        this.setState({
+            ...this.state,
+            messages: [
+                ...this.state.messages.filter((o,i) => (i < n ? false : true)),
+            ]
+        })
     }
 
     render(): React.ReactNode {
         return <div id="crazy-world-gui">
             <RocketCanvas />
-            <CrazyBaseModal
+
+            <Button
+                className="fixed-bottom"
+                onClick={() => {
+                    const messageTypes = Object.values(MessageVariantTypeE)
+                    this.addMessages([
+                        {
+                            text: 'This is a message...' + Math.random(),
+                            ownerId: 'u1',
+                            ownerName: 'User 1',
+                            dangerIcon: Math.random() > 0.5,
+                            type: Math.random() > 0.5 ? messageTypes[Math.trunc(messageTypes.length * Math.random())] : null
+                        }
+                    ])
+                }}
+            >
+                Add a Message
+            </Button>
+
+            <MessagePanel 
+                massages={this.state.messages}
+                messageBoxHeight={this.state.messageBoxHeight}
+                transitionDuration={500}
+                onEffecDone={() => {
+                    if (this.state.messages.length > 15) {
+                        this.removeLastMessages(5)
+                        console.log('Too much messages!')
+                    }
+                }}
+            />
+
+            <CrazyBackdrops
+                size="150px"
+                color="rgba(0,0,0,0.7)"
+                zIndex={2}
+            />
+        </div>
+    }
+}
+
+/*
+
+<CrazyBaseModal
                 baseState={this.state.showedBaseData}
                 visible={this.state.showBaseDialog} 
                 userId={this.state.userId}
@@ -202,6 +299,5 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                     console.log("Rocket "+t+" buyed!")
                 }}
             />
-        </div>
-    }
-}
+
+            */

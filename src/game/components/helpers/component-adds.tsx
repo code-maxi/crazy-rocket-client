@@ -5,11 +5,12 @@ export function CrazyBlockquote(props: {
     style?: string,
     addedClassNames?: string,
     maxWidth?: string,
+    backgroundOpacity?: number,
     children: React.ReactNode
 }) {
     return <div 
         className={'d-block rounded border-start border-3 py-2 px-3 border-' + (props.style ? props.style : 'primary') + (props.addedClassNames ? ' '+props.addedClassNames : '')}
-        style={{ backgroundColor: 'rgba(255,255,255,0.05)', maxWidth: props.maxWidth }}
+        style={{ backgroundColor: 'rgba(255,255,255,' + (props.backgroundOpacity ? ''+props.backgroundOpacity : '0.2') + ')', maxWidth: props.maxWidth }}
     >
         {props.children}
     </div>
@@ -22,7 +23,7 @@ export function CrazyTableList(props: {
     return <div className="d-flex flex-column">
         {
             props.items.map((i, index) => (
-                <div key={index} className={"d-flex p-2 flex-row justify-content-between align-items-center bg-dark text-light" + (index === props.items.length-1 ? '' : ' border-bottom border-secondary')}>
+                <div key={index} className={"d-flex p-2 flex-row justify-content-between align-items-center" + (index === props.items.length-1 ? '' : ' border-bottom border-secondary')}>
                     <span>{i[0]}</span>
                     
                     <span className={'fw-bold ' + (i[2] ? 'fs-5' : 'fs-6')}>
@@ -100,7 +101,7 @@ export function CrazyCard(props: {
         onMouseEnter={() => {if (props.onHover) props.onHover(true)}} 
         onMouseLeave={() => {if (props.onHover) props.onHover(false)}}
         style={{ width: props.width }}
-        className={"bg-dark text-light shadow-lg" + (props.classNames ? ' '+props.classNames : '')}
+        className={"shadow-lg" + (props.classNames ? ' '+props.classNames : '')}
     >
         {props.img ? <Card.Img variant="top" src={props.img} /> : undefined}
 

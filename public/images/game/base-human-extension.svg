@@ -9,9 +9,6 @@
    id="svg5"
    sodipodi:docname="base-human-extension.svg"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/game/base-human-extension.png"
-   inkscape:export-xdpi="558.6543"
-   inkscape:export-ydpi="558.6543"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -23,7 +20,7 @@
      bordercolor="#666666"
      borderopacity="1.0"
      inkscape:pageshadow="2"
-     inkscape:pageopacity="0"
+     inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:document-units="px"
      showgrid="false"
@@ -34,14 +31,14 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-global="true"
      inkscape:snap-grids="false"
-     inkscape:zoom="1.0591871"
-     inkscape:cx="254.44041"
-     inkscape:cy="218.09178"
+     inkscape:zoom="0.52959353"
+     inkscape:cx="82.138466"
+     inkscape:cy="105.74147"
      inkscape:window-width="1920"
      inkscape:window-height="1011"
      inkscape:window-x="0"
      inkscape:window-y="32"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
      id="defs2">
@@ -95,7 +92,7 @@
        x2="120"
        y2="0"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(4.3311791,0,0,6.189808,0.12939244,6.5803526)" />
+       gradientTransform="matrix(4.232469,0,0,5.3580169,6.0518644,6.0521174)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient8058"
@@ -148,15 +145,15 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:url(#linearGradient3630);fill-opacity:1;stroke:#000000;stroke-width:13.1608;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 6.152861,25.65174 72.067162,234.3483 a 27.290416,27.290416 36.23578 0 0 26.023469,19.07127 l 323.819109,-0.002 a 27.290829,27.290829 143.76395 0 0 26.02351,-19.07149 L 513.84744,25.651725 A 14.657031,14.657031 53.764117 0 0 499.87095,6.5803524 H 20.129392 A 14.657068,14.657068 126.23595 0 0 6.152861,25.65174 Z"
+       style="fill:url(#linearGradient3630);fill-opacity:1;stroke:#000000;stroke-width:12.1042;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 12.768749,24.890468 75.519426,200.88266 a 28.364196,28.364196 35.187906 0 0 26.716884,18.83824 l 315.52742,-0.002 a 28.364596,28.364596 144.81187 0 0 26.71693,-18.83844 L 507.23121,24.89045 A 14.102166,14.102166 54.812018 0 0 493.94814,6.0521174 H 26.051864 A 14.102206,14.102206 125.18806 0 0 12.768749,24.890468 Z"
        id="path1668"
        sodipodi:nodetypes="ccccc"
        inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-human-extension.png"
        inkscape:export-xdpi="558.6543"
        inkscape:export-ydpi="558.6543"
        inkscape:path-effect="#path-effect1304"
-       inkscape:original-d="M 0.12939242,6.5803524 78.090631,253.41969 441.90974,253.41751 519.87095,6.5803524 Z" />
+       inkscape:original-d="M 6.0518644,6.0521174 82.236311,219.72101 437.76373,219.71912 513.94814,6.0521174 Z" />
     <path
        style="fill:url(#linearGradient7924);fill-opacity:1;stroke:none;stroke-width:1.62945;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter1531)"
        d="M 17.668055,10.360262 23.428581,26.815345 62.192276,26.8152 68.433831,10.360262 Z"
@@ -165,6 +162,6 @@
        inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-human-extension.png"
        inkscape:export-xdpi="558.6543"
        inkscape:export-ydpi="558.6543"
-       transform="matrix(6.1932353,0,0,6.9916271,-6.0636149,-0.41130983)" />
+       transform="scale(6.0520871)" />
   </g>
 </svg>

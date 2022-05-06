@@ -56,9 +56,7 @@ function CrazyBaseTransferTabItem(props: {
     const amountAbleToTransfer = props.values[transferType[1]]
     const amountRange = freeSpaceAmount < amountAbleToTransfer ? freeSpaceAmount : amountAbleToTransfer
 
-    return <Stack gap={2} direction='vertical' className='text-light p-3 bg-dark justify-content-center' style={{
-        backgroundColor: 'rgb(50,50,50)'
-    }}>
+    return <Stack gap={2} direction='vertical' className='p-3 justify-content-center'>
         <h5 className="pe-4">Transfer {props.type}</h5>
 
         <div className="d-flex align-items-center justify-content-between w-100">

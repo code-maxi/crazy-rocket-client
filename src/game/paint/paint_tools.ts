@@ -107,15 +107,16 @@ export function scalingOfGeoObject(config: PaintGeoI) {
 export function transformRect(
     gc: CanvasRenderingContext2D, config: PaintGeoI, 
     callback: (gc: CanvasRenderingContext2D, pos: VectorI, size: VectorI) => void,
-    stillUseTransform?: boolean,
+    useTransformAlways?: boolean,
     ownScaling?: number
 ) {
     const scaling = ownScaling ? ownScaling :  scalingOfGeoObject(config)
 
     const size = config.transform ? V.mul(config.size!, scaling * config.transform!.unitToPixel) : config.size!
-    const pos = config.transform ? V.add(worldToScreen(config.pos!, config.transform), V.mul(config.screenTransform!, scaling)) : config.pos!
+    let pos = config.transform ? worldToScreen(config.pos!, config.transform) : config.pos!
+    if (config.screenTransform) pos = V.add(pos, V.mul(config.screenTransform, scaling))
 
-    const useTransform = (config?.rotation && config.rotation != 0) || stillUseTransform === true
+    const useTransform = (config?.rotation && config.rotation != 0) || useTransformAlways === true
 
     if (useTransform) {
         gc.save()
@@ -123,7 +124,7 @@ export function transformRect(
         if (config?.rotation) gc.rotate(config.rotation)
     }
     
-    let relativePosWithCenter = V.mulVec(size, V.negate(config.origin!))
+    let relativePosWithCenter = V.mulVec(size, V.negate(config.origin ? config.origin : V.vec(0.5,0.5)))
     if (useTransform === false) relativePosWithCenter = V.add(relativePosWithCenter, pos)
 
     /*paintPoint(gc, V.zero(), "red", 10)
@@ -482,6 +483,51 @@ export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
             )
         }
     }, undefined, 1)
+}
+
+export const ironColors = [
+    'rgb(50,50,50)',
+    'rgb(150,150,150)'
+]
+
+export function paintIronBar(gc: CanvasRenderingContext2D, p1: VectorI, p2: VectorI) {
+    const delta = V.sub(p2, p1)
+
+    const nv = V.normalRight(V.mul(V.e(delta), gc.lineWidth/2))
+
+    const gr = gc.createLinearGradient(
+        p1.x - nv.x, p1.y - nv.y,
+        p1.x + nv.x, p1.y + nv.y
+    )
+
+    gr.addColorStop(0,ironColors[0])
+    gr.addColorStop(0.5,ironColors[1])
+    gr.addColorStop(1,ironColors[0])
+
+    gc.strokeStyle = gr
+    
+    gc.beginPath()
+    gc.moveTo(p1.x, p1.y)
+    gc.lineTo(p2.x, p2.y)
+    gc.stroke()
+}
+
+export function paintIronCircle(gc: CanvasRenderingContext2D, p: VectorI, radius: number) {
+    const gr = gc.createRadialGradient(
+        p.x, p.x, radius - gc.lineWidth/2,
+        p.x, p.y, radius + gc.lineWidth/2
+    )
+
+    gr.addColorStop(0,ironColors[0])
+    gr.addColorStop(0.5,ironColors[1])
+    gr.addColorStop(1,ironColors[0])
+
+    gc.strokeStyle = gr
+    
+    gc.beginPath()
+    gc.arc(p.x, p.y, radius, 0, Math.PI*2)
+    gc.closePath()
+    gc.stroke()
 }
 
 // Image

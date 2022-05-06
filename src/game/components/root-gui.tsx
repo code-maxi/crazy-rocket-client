@@ -22,6 +22,7 @@ export class GalaxyRootGUI extends React.Component<GalaxyRootGUIPropsI, GalaxyRo
     }
 
     setCanvasDisplay() { this.setState({ ...this.state, displayType: 'game' }) }
+    
 
     render(): React.ReactNode {
         return (
