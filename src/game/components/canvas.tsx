@@ -2,10 +2,10 @@ import React from "react";
 import { keyListen } from "../keybord";
 import { MapConfig, rocketMapHelper } from "./map";
 import { V, vec } from "../../common/math";
-import { PaintGameWorldI, PaintTransformI } from "../paint/paint_declarations"
+import { AnimationObjectI, GameObjectPaintDataI, PaintGameWorldI, PaintTransformI } from "../paint/paint_declarations"
 import { paintObject, paintObjectsSorted } from "../paint/paint_helpers"
 import { ClientMouseI, VectorI } from "../../common/declarations";
-import { paintPoint } from "../paint/paint_addons";
+import { drawRoundRectangle, paintPoint } from "../paint/paint_addons";
 import { screenToWorld, worldToScreen } from "../paint/paint_tools";
 import { getImage } from "../paint/images";
 import { debugWorld } from "../..";
@@ -21,6 +21,8 @@ export class RocketCanvas extends React.Component<{}, {
     private inPaintLoop = false
     
     private worldData?: PaintGameWorldI
+
+    private clientAnimations: AnimationObjectI[] = []
 
     private transform: PaintTransformI = {
         eye: V.zero(),
@@ -48,6 +50,16 @@ export class RocketCanvas extends React.Component<{}, {
         }
         RocketCanvas.instance = this
         console.log("CANVAS INITIALIZED")
+    }
+
+    addAnimation(ani: AnimationObjectI) {
+        this.clientAnimations.push(ani)
+        ani.giveMeTheKnife(() => {
+            const index = this.clientAnimations.indexOf(ani, 0)
+            this.clientAnimations.splice(index, 1)
+            console.log('Animation killed! ' + ani.getType())
+        })
+        console.log('Animation added! ' + ani.getType())
     }
 
     private init() {
@@ -168,14 +180,14 @@ export class RocketCanvas extends React.Component<{}, {
 
     paint() {
         const canvas = this.canvasRef
+
         if (this.worldData && canvas) {
             const gc = canvas.getContext('2d')!
             const canvasSize = V.vec(this.state.width, this.state.height)
 
             const currentWorld = {...this.worldData}
 
-            gc.fillStyle = 'black'
-            gc.fillRect(0,0, canvasSize.x, canvasSize.y)
+            gc.clearRect(0,0, canvasSize.x, canvasSize.y)
 
             this.transform = {
                 ...this.transform,
@@ -183,13 +195,28 @@ export class RocketCanvas extends React.Component<{}, {
                 wholeScaling: this.transform.scaling * this.transform.unitToPixel
             }
 
-            paintObjectsSorted(currentWorld.objects, gc, this.transform)
+            this.clientAnimations.forEach(ani => ani.calc(currentWorld.factor))
+
+            const objects: GameObjectPaintDataI[] = [
+                {
+                    type: 'BACKGRUOND',
+                    pos: V.zero(),
+                    srPos: null,
+                    srSize: null,
+                    props: {
+                        width: currentWorld.width,
+                        height: currentWorld.height
+                    }
+                },
+                ...this.clientAnimations.map(ani => ani.data()),
+                ...currentWorld.objects
+            ]
+
+            paintObjectsSorted(objects, gc, this.transform)
         }
 
 
-        if (this.inPaintLoop) setTimeout(() => {
-            requestAnimationFrame(() => this.paint())
-        }, 10)
+        if (this.inPaintLoop) setTimeout(() => requestAnimationFrame(() => this.paint()), 10)
 
         /*g.fillStyle = "black"
         g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)

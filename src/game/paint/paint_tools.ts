@@ -1,7 +1,7 @@
 import { map } from "jquery";
 import { config } from "process";
 import wrap from "word-wrap";
-import { VectorI } from "../../common/declarations";
+import { GeoObjectI, VectorI } from "../../common/declarations";
 import { V, vec, Vector } from "../../common/math";
 import { getImage } from "./images";
 import { drawRoundRectangle, paintPoint, setGradiendOrColor } from "./paint_addons";
@@ -63,13 +63,14 @@ export interface PaintGeoI {
     screenTransform?: VectorI
     ownScaling?: number
     partiallyScaling?: number
+    paintGeoDebug?: boolean
 }
 
 const PaintGeoDefault: PaintGeoI = {
     pos: vec(0,0),
     origin: vec(0.5,0.5),
     size: vec(10,10),
-    screenTransform: vec(0,0)
+    paintGeoDebug: false
 }
 
 // Transform
@@ -95,47 +96,47 @@ export function worldToScreen(pos: VectorI, trans: PaintTransformI) {
 export function screenToWorld(pos: VectorI, trans: PaintTransformI) {
     return V.add(V.mul(V.sub(pos, V.half(trans.canvasSize)), 1/(trans.scaling * trans.unitToPixel)), trans.eye)
 }
-export function pixelToUnit(value: VectorI, trans: PaintTransformI) { return V.mul(value, 1/trans.unitToPixel) }
-export function unitToPixel(value: VectorI, trans: PaintTransformI) { return V.mul(value, trans.unitToPixel) }
 
 export function scalingOfGeoObject(config: PaintGeoI) {
     return config.ownScaling ? config.ownScaling : (
-        config.partiallyScaling ? 1 + (config.transform!.scaling - 1) * config.partiallyScaling : config.transform!.scaling
+        config.transform ? (config.partiallyScaling ? 1 + (config.transform!.scaling - 1) * config.partiallyScaling : config.transform!.scaling) : 1
     )
 }
 
 export function transformRect(
     gc: CanvasRenderingContext2D, config: PaintGeoI, 
     callback: (gc: CanvasRenderingContext2D, pos: VectorI, size: VectorI) => void,
-    useTransformAlways?: boolean,
-    ownScaling?: number
+    alwaysTranslate?: boolean
 ) {
-    const scaling = ownScaling ? ownScaling :  scalingOfGeoObject(config)
+    const scaling = scalingOfGeoObject(config)
 
-    const size = config.transform ? V.mul(config.size!, scaling * config.transform!.unitToPixel) : config.size!
+    const size = V.mul(config.size!, scaling * (config.transform ? config.transform.unitToPixel : 1))
     let pos = config.transform ? worldToScreen(config.pos!, config.transform) : config.pos!
-    if (config.screenTransform) pos = V.add(pos, V.mul(config.screenTransform, scaling))
 
-    const useTransform = (config?.rotation && config.rotation != 0) || useTransformAlways === true
+    if (config.screenTransform) pos = V.add(pos, config.screenTransform)
+
+    const useTransform = (config.rotation && config.rotation != 0) || alwaysTranslate === true
 
     if (useTransform) {
         gc.save()
         gc.translate(pos.x, pos.y)
-        if (config?.rotation) gc.rotate(config.rotation)
+        if (config.rotation && config.rotation > 0) gc.rotate(config.rotation)
     }
     
     let relativePosWithCenter = V.mulVec(size, V.negate(config.origin ? config.origin : V.vec(0.5,0.5)))
     if (useTransform === false) relativePosWithCenter = V.add(relativePosWithCenter, pos)
 
-    /*paintPoint(gc, V.zero(), "red", 10)
-    paintPoint(gc, relativePosWithCenter, "blue", 2)
-    
-    gc.strokeStyle = "yellow"
-    gc.lineWidth = 2
-    drawRoundRectangle(gc, relativePosWithCenter.x, relativePosWithCenter.y, size.x, size.y, 5)
-    gc.stroke()*/
-
     callback(gc, relativePosWithCenter, size)
+
+    if (config.paintGeoDebug === true) {
+        paintPoint(gc, V.zero(), "red", 10)
+        paintPoint(gc, relativePosWithCenter, "green", 2)
+        
+        gc.strokeStyle = "yellow"
+        gc.lineWidth = 2
+        drawRoundRectangle(gc, relativePosWithCenter.x, relativePosWithCenter.y, size.x, size.y, 0)
+        gc.stroke()
+    }
 
     if (useTransform) gc.restore()
 }
@@ -363,7 +364,12 @@ export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
     
     const maxHeight = summedLineHeight + ((lines.length - 1) * gapBetweenLines)
 
-    options.size = pixelToUnit(vec(maxWidth + 2*options.bPadding!.x, maxHeight + 2*options.bPadding!.y), options.transform!)
+    const transScaling = options.transform ? options.transform.wholeScaling : 1
+
+    options.size = vec(
+        (maxWidth + 2*options.bPadding!.x) / transScaling,
+        (maxHeight + 2*options.bPadding!.y) / transScaling
+    )
 
     transformRect(gc, options, (gc, pos, size) => {
         paintBackroundArea(gc, {...options, pos: pos, size: size})
@@ -380,7 +386,7 @@ export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
                 pos.y + options.bPadding!.y + i * (options.fSize! + gapBetweenLines)
             )
         }
-    }, undefined, 1)
+    }, undefined)
 }
 
 // Table
@@ -401,10 +407,17 @@ const TableOptionsDefault: TableOptionsI = {
     ...PaintGeoDefault,
     heading: 'No heading specified!',
     valuesMap: [],
-    hfColor: 'yellow',
     hGap: 10,
     vGap: 5,
-    vfColor: 'lightyellow'
+    vfColor: 'lightyellow',
+    fColor: 'white',
+    fSize: 14,
+    hfColor: 'white',
+    fFamily: 'ubuntu',
+    bColor: 'rgb(60,60,60)',
+    bColor2: 'rgb(40,40,40)',
+    bRadius: 5,
+    bPadding: vec(8,8),
 }
 
 export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
@@ -439,9 +452,11 @@ export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
     const maxWidth = 2*options.bPadding!.x + (mapWidth > hWidth ? mapWidth : hWidth)
     const maxHeight = 2*options.bPadding!.y + hfSize + options.valuesMap!.length * (options.fSize! + options.vGap!) + (hvGap - options.vGap!)
 
+    const transScaling = options.transform ? options.transform.wholeScaling : 1
+
     transformRect(gc, {
         ...options,
-        size: pixelToUnit(vec(maxWidth, maxHeight), options.transform!)
+        size: vec(maxWidth / transScaling, maxHeight / transScaling)
     }, (gc, pos, size) => {
         paintBackroundArea(gc, {...options, pos: pos, size: size})
 
@@ -482,7 +497,7 @@ export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
                 yPos
             )
         }
-    }, undefined, 1)
+    })
 }
 
 export const ironColors = [
@@ -532,3 +547,45 @@ export function paintIronCircle(gc: CanvasRenderingContext2D, p: VectorI, radius
 
 // Image
 
+export function paintCircledShaddow(gc: CanvasRenderingContext2D, color: string, pos: VectorI, r1: number, r2: number) {
+    const gr = gc.createRadialGradient(
+        pos.x, pos.y, r1,
+        pos.x, pos.y, r2
+    )
+    
+    gr.addColorStop(0, color)
+    gr.addColorStop(1, 'rgba(0,0,0,0)')
+    
+    gc.strokeStyle = gr
+    gc.lineWidth = r2 - r1
+
+    gc.beginPath()
+    gc.arc(pos.x, pos.y, (r1+r2)/2, 0, Math.PI*2)
+    gc.stroke()
+}
+
+export function followingTooltipCircular(
+    followingPos: VectorI,
+    followingRadius: number,
+    trans: PaintTransformI
+): ({pos: VectorI, tickDirection: DirectionE}) {
+    const delta = V.sub(trans.eye, followingPos)
+    const pos = V.add(followingPos, V.el(delta, followingRadius))
+
+    let tickDirection: DirectionE = 'top'
+
+    if (Math.abs(delta.x) > Math.abs(delta.y)) tickDirection = delta.x > 0 ? 'left' : 'right'
+    else tickDirection = delta.y > 0 ? 'top' : 'bottom'
+
+    return {
+        pos: pos,
+        tickDirection: tickDirection
+    }
+}
+
+export function rectRectCollision(
+    rPos1: VectorI, rSize1: VectorI, 
+    rPos2: VectorI, rSize2: VectorI
+) {
+    return (rPos1.x + rSize1.x > rPos2.x && rPos1.x < rPos2.x + rSize2.x) && (rPos1.y + rSize1.y > rPos2.y && rPos1.y < rPos2.y + rSize2.y)
+}

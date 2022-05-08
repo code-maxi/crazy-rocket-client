@@ -5,8 +5,8 @@ import './css/style.scss'
 import { SocketUser } from './game/network/socket-user';
 import { GalaxyRootGUI } from "./game/components/root-gui"
 import { loadImages } from './game/paint/images';
-import { PaintGameWorldI } from './game/paint/paint_declarations';
-import { vec } from './common/math';
+import { PaintGameWorldI, PlanetPropsI } from './game/paint/paint_declarations';
+import { V, vec } from './common/math';
 import { worldToScreen } from './game/paint/paint_tools';
 import { BaseExtensionTypeE } from './game/decl';
 import { forIch } from './game/other-adds';
@@ -56,7 +56,9 @@ loadImages([
     'game/base-enter-zone-red.png',
     'game/base-enter-zone-green.png',
     'game/base-enter-zone-blue.png',
-    'game/base-enter-zone-yellow.png'
+    'game/base-enter-zone-yellow.png',
+    'game/city.png',
+    'game/venus-planet.png'
 ])
 
 console.log('Starting Client on url "' + window.location.href + '" ...')
@@ -76,21 +78,44 @@ console.log('Galaxy-Parameter: ' + prevGalaxy)
 
 if (prevGalaxy && !debugGame) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
+const planetData: PlanetPropsI = {
+  radius: 10,
+  name: 'Venus',
+  img: 'game/venus-planet.png',
+  rotation: 0,
+  tableValues: [
+    ['Weight', '10000t'],
+    ['Around', '12E t']
+  ],
+  cities: forIch(5, i => ({
+      tableValues: [
+        ['Times', ''+i],
+        ['Test', 'lalala']
+      ],
+      size: 0.5 + Math.random() * 1,
+      name: 'City ' + i,
+      relPosToPlanet: V.al(Math.random()*2*Math.PI, Math.random() * 50) // in (%,%)
+  })),
+}
+
 export const debugWorld: PaintGameWorldI = {
+  factor: 1,
   objects: [
     {
-      type: 'BASE',      
+      type: 'BASE',
+      srPos: vec(5,5),
+      srSize: vec(10,10),
       pos: vec(10,10),
       props: {
-        name: 'XI%q',
+        name: 'XIq',
         enterZoneRadius: 4,
         outerRingRadius: 8,
         outerRingRotation: 1.4,
-        interceptionRadius: 20,
+        interceptionRadius: 14,
         extensions: forIch(12, i => ({
           place: 360*(i/12),
           type: i % 2 === 0 ? BaseExtensionTypeE.HUMAN_AREA : BaseExtensionTypeE.CARGO_AREA,
-          stability: Math.random()
+          stability: Math.random() * 100
         })),
         extensionWidth: 3.5,
         teamColor: 'YELLOW',
@@ -104,30 +129,13 @@ export const debugWorld: PaintGameWorldI = {
       }
     },
     {
-      type: 'BASE',      
-      pos: vec(25,30),
-      props: {
-        name: 'XI%q',
-        enterZoneRadius: 4,
-        outerRingRadius: 8,
-        outerRingRotation: 1.4,
-        interceptionRadius: 12,
-        extensions: forIch(6, i => ({
-          place: 360*(i/6),
-          type: i % 2 === 0 ? BaseExtensionTypeE.HUMAN_AREA : BaseExtensionTypeE.CARGO_AREA,
-          stability: Math.random()
-        })),
-        extensionWidth: 3.5,
-        teamColor: 'BLUE',
-        tableValues: [
-          ['Team', 'BLUE'],
-          ['GOLD', '12u3'],
-          ['LALA', '70u3'],
-          ['GURU', '40'],
-          ['MEER', '1u3']
-        ]
-      }
+      type: 'PLANET',
+      pos: vec(-10,-10),
+      srPos: vec(-5,-5),
+      srSize: vec(10,10),
+      props: planetData
     }
+
 
     /*{
       paintType: 'ASTEROID',
@@ -141,7 +149,9 @@ export const debugWorld: PaintGameWorldI = {
     }*/
   ],
   eye: vec(2, 2),
-  scaling: 50
+  scaling: 1,
+  width: 1000,
+  height: 1000
 }
 
 ReactDOM.render(

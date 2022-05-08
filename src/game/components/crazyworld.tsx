@@ -1,11 +1,11 @@
 import React from "react";
 import { MessagePanel } from "./chat/message-panel"
-import { debugShop } from "../..";
 import { BaseExtensionTypeE, CrazyBaseStateI, CrazyGoodE, MessageDataI, MessageVariantTypeE, RocketTypeE } from "../decl";
 import { RocketCanvas } from "./canvas";
-import {CrazyBaseModal} from "./crazybase/CrazyBaseModal"
 import { CrazyBackdrops } from "./crazy_backdrops"
 import { Button } from "react-bootstrap";
+import { CircledBooomAnimation } from "../paint/animation/booom"
+import { vec } from "../../common/math";
 
 export interface CrazyWorldState {
     showedBaseData?: CrazyBaseStateI
@@ -239,23 +239,46 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
         return <div id="crazy-world-gui">
             <RocketCanvas />
 
-            <Button
-                className="fixed-bottom"
-                onClick={() => {
-                    const messageTypes = Object.values(MessageVariantTypeE)
-                    this.addMessages([
-                        {
-                            text: 'This is a message...' + Math.random(),
-                            ownerId: 'u1',
-                            ownerName: 'User 1',
-                            dangerIcon: Math.random() > 0.5,
-                            type: Math.random() > 0.5 ? messageTypes[Math.trunc(messageTypes.length * Math.random())] : null
-                        }
-                    ])
-                }}
-            >
-                Add a Message
-            </Button>
+            <div className="d-inline-flex flex-row fixed-bottom">
+                <Button
+                    onClick={() => {
+                        const messageTypes = Object.values(MessageVariantTypeE)
+                        this.addMessages([
+                            {
+                                text: 'This is a message...' + Math.random(),
+                                ownerId: 'u1',
+                                ownerName: 'User 1',
+                                dangerIcon: Math.random() > 0.5,
+                                type: Math.random() > 0.5 ? messageTypes[Math.trunc(messageTypes.length * Math.random())] : null
+                            }
+                        ])
+                    }}
+                >
+                    Add a Message
+                </Button>
+
+                <Button
+                    onClick={() => {
+                        RocketCanvas.instance.addAnimation(new CircledBooomAnimation({
+                            pos: vec(0,0),
+                            depth: 100,
+                            radius: 4,
+                            duration: 60,
+                            velocity: vec(0,0),
+                            colors: [
+                                '255,127,80',
+                                '255,215,0',
+                                '255,165,0',
+                                '255,140,0'
+                            ],
+                            radiusFac: 1,
+                            revealRadiusFac: 1
+                        }))
+                    }}
+                >
+                    Add a Booom
+                </Button>
+            </div>
 
             <MessagePanel 
                 massages={this.state.messages}

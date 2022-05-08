@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="520"
-   height="520"
-   viewBox="0 0 520 520"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
    version="1.1"
    id="svg5"
    sodipodi:docname="base-human-extension.svg"
@@ -41,7 +41,7 @@
      inkscape:window-height="1011"
      inkscape:window-x="0"
      inkscape:window-y="32"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
      id="defs2">
@@ -95,7 +95,7 @@
        x2="120"
        y2="0"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(4.3311791,0,0,6.189808,0.12939244,6.5803526)" />
+       gradientTransform="matrix(4.2725681,0,0,6.1060453,-0.35410632,5.0304672)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient8058"
@@ -148,15 +148,15 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:url(#linearGradient3630);fill-opacity:1;stroke:#000000;stroke-width:13.1608;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 6.152861,25.65174 72.067162,234.3483 a 27.290416,27.290416 36.23578 0 0 26.023469,19.07127 l 323.819109,-0.002 a 27.290829,27.290829 143.76395 0 0 26.02351,-19.07149 L 513.84744,25.651725 A 14.657031,14.657031 53.764117 0 0 499.87095,6.5803524 H 20.129392 A 14.657068,14.657068 126.23595 0 0 6.152861,25.65174 Z"
+       style="fill:url(#linearGradient3630);fill-opacity:1;stroke:#000000;stroke-width:10.0609;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 5.6693624,24.101855 70.528667,229.4581 a 27.290416,27.290416 36.23578 0 0 26.023469,19.07127 l 318.895794,-0.002 a 27.290828,27.290828 143.76395 0 0 26.02351,-19.07149 L 506.33063,24.10184 A 14.657031,14.657031 53.764117 0 0 492.35414,5.0304671 H 19.645894 A 14.657068,14.657068 126.23595 0 0 5.6693624,24.101855 Z"
        id="path1668"
        sodipodi:nodetypes="ccccc"
        inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-human-extension.png"
        inkscape:export-xdpi="558.6543"
        inkscape:export-ydpi="558.6543"
        inkscape:path-effect="#path-effect1304"
-       inkscape:original-d="M 0.12939242,6.5803524 78.090631,253.41969 441.90974,253.41751 519.87095,6.5803524 Z" />
+       inkscape:original-d="M -0.35410633,5.0304671 76.552136,248.52949 435.44793,248.52734 512.35414,5.0304671 Z" />
     <path
        style="fill:url(#linearGradient7924);fill-opacity:1;stroke:none;stroke-width:1.62945;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter1531)"
        d="M 17.668055,10.360262 23.428581,26.815345 62.192276,26.8152 68.433831,10.360262 Z"
@@ -165,6 +165,6 @@
        inkscape:export-filename="/home/maxi/Programmieren/Games/CrazyRocket/crazy-rocket-client/public/images/base-human-extension.png"
        inkscape:export-xdpi="558.6543"
        inkscape:export-ydpi="558.6543"
-       transform="matrix(6.1932353,0,0,6.9916271,-6.0636149,-0.41130983)" />
+       transform="matrix(6.1094265,0,0,6.8970141,-6.4633079,-1.8665817)" />
   </g>
 </svg>
