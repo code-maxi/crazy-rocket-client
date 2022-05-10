@@ -1,8 +1,8 @@
-import { FinalGameData } from "../../final-game-data"
+import { FinalGameData } from "../../../final-game-data"
 import React, { useEffect } from "react";
-import { BaseExtensionTypeE, CrazyBaseStateI, CrazyGoodE, GoodsContainerI, RocketTypeE } from "../../decl";
-import { drawRoundRectangle } from "../../paint/paint_addons"
-import { V, vec } from "../../../common/math";
+import { BaseExtensionTypeE, CrazyBaseStateI, CrazyGoodE, GoodsContainerI, RocketTypeE } from "../../../decl";
+import { drawRoundRectangle } from "../../../paint/paint_addons"
+import { V, vec } from "../../../../common/math";
 
 const enterZoneRadius = 0.125 * 0.8
 const outerRingRadius = 0.8/2

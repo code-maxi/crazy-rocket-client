@@ -1,7 +1,4 @@
-import { GameObjectPaintDataI, PaintTransformI } from "./paint_declarations";
-import { V, vec } from "../../common/math";
-import { VectorI } from "../../common/declarations";
-import { paintObject } from "./paint_helpers";
+import { VectorI } from "../../../common/declarations";
 
 export function getGradient(gc: CanvasRenderingContext2D, c1: string, c2: string, pos1: VectorI, pos2: VectorI) {
     const grd = gc.createLinearGradient(pos1.x, pos1.y, pos2.x, pos2.y)

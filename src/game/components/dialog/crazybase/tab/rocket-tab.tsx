@@ -1,7 +1,7 @@
 import { Badge, Button, Card, ListGroup, ListGroupItem, Stack } from "react-bootstrap";
-import { GoodsContainerI, GoodsHelper, RocketDescriptionI, RocketOnBoardI, RocketTypeE } from "../../../decl";
-import { FinalGameData } from "../../../final-game-data";
-import { CrazyTableList } from "../../helpers/component-adds";
+import { GoodsContainerI, GoodsHelper, RocketDescriptionI, RocketOnBoardI, RocketTypeE } from "../../../../decl";
+import { FinalGameData } from "../../../../final-game-data";
+import { CrazyTableList } from "../../../helpers/component-adds";
 
 export function CrazyBaseRocketTab(props: {
     userId: string,

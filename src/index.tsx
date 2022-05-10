@@ -5,9 +5,9 @@ import './css/style.scss'
 import { SocketUser } from './game/network/socket-user';
 import { GalaxyRootGUI } from "./game/components/root-gui"
 import { loadImages } from './game/paint/images';
-import { PaintGameWorldI, PlanetPropsI } from './game/paint/paint_declarations';
+import { PaintGameWorldI, CrazyPlanetPropsI } from './game/paint/paint_declarations';
 import { V, vec } from './common/math';
-import { worldToScreen } from './game/paint/paint_tools';
+import { worldToScreen } from './game/paint/world/paint_tools';
 import { BaseExtensionTypeE } from './game/decl';
 import { forIch } from './game/other-adds';
 
@@ -58,7 +58,8 @@ loadImages([
     'game/base-enter-zone-blue.png',
     'game/base-enter-zone-yellow.png',
     'game/city.png',
-    'game/venus-planet.png'
+    'game/venus-planet.png',
+    'game/crossbones.png'
 ])
 
 console.log('Starting Client on url "' + window.location.href + '" ...')
@@ -78,21 +79,21 @@ console.log('Galaxy-Parameter: ' + prevGalaxy)
 
 if (prevGalaxy && !debugGame) new SocketUser('ws://localhost:1234/socket', prevGalaxy)
 
-const planetData: PlanetPropsI = {
+const planetData: CrazyPlanetPropsI = {
   radius: 10,
   name: 'Venus',
   img: 'game/venus-planet.png',
-  rotation: 0,
+  rotation: 1.5,
   tableValues: [
     ['Weight', '10000t'],
     ['Around', '12E t']
   ],
-  cities: forIch(5, i => ({
+  cities: forIch(25, i => ({
       tableValues: [
         ['Times', ''+i],
         ['Test', 'lalala']
       ],
-      size: 0.5 + Math.random() * 1,
+      size: 0.4 + Math.random() * 1,
       name: 'City ' + i,
       relPosToPlanet: V.al(Math.random()*2*Math.PI, Math.random() * 50) // in (%,%)
   })),
@@ -102,6 +103,7 @@ export const debugWorld: PaintGameWorldI = {
   factor: 1,
   objects: [
     {
+      id: 'base_1',
       type: 'BASE',
       srPos: vec(5,5),
       srSize: vec(10,10),
@@ -129,6 +131,35 @@ export const debugWorld: PaintGameWorldI = {
       }
     },
     {
+      id: 'base_2',
+      type: 'BASE',
+      srPos: vec(5,5),
+      srSize: vec(10,10),
+      pos: vec(35,10),
+      props: {
+        name: 'uQP',
+        enterZoneRadius: 4,
+        outerRingRadius: 8,
+        outerRingRotation: 1.4,
+        interceptionRadius: 14,
+        extensions: forIch(6, i => ({
+          place: 360*(i/6),
+          type: i % 2 === 0 ? BaseExtensionTypeE.HUMAN_AREA : BaseExtensionTypeE.CARGO_AREA,
+          stability: Math.random() * 100
+        })),
+        extensionWidth: 3.5,
+        teamColor: 'BLUE',
+        tableValues: [
+          ['Team', 'Yellow'],
+          ['GOLD', '12u3'],
+          ['LALA', '70u3'],
+          ['GURU', '40'],
+          ['MEER', '1u3']
+        ]
+      }
+    },
+    {
+      id: 'planet_1',
       type: 'PLANET',
       pos: vec(-10,-10),
       srPos: vec(-5,-5),
@@ -154,7 +185,8 @@ export const debugWorld: PaintGameWorldI = {
   height: 1000
 }
 
-ReactDOM.render(
+setTimeout(() => {
+  ReactDOM.render(
     <React.StrictMode>
         <GalaxyRootGUI 
           noGalaxySpecifyed={prevGalaxy === null}
@@ -165,6 +197,7 @@ ReactDOM.render(
     document.getElementById('root')
 )
 
+}, 500)
 
 
 // If you want to start measuring performance in your app, pass a function

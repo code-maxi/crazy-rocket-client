@@ -2,9 +2,9 @@ import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import React from "react";
-import { CrazyBaseStateI, CrazyGoodE, GoodsContainerI, RocketTypeE } from "../../decl";
+import { CrazyBaseStateI, CrazyGoodE, GoodsContainerI, RocketTypeE } from "../../../decl";
 import Table from 'react-bootstrap/Table'
-import { CrazyBlockquote } from '../helpers/component-adds'
+import { CrazyBlockquote } from '../../helpers/component-adds'
 import { Badge } from 'react-bootstrap'
 import { CrazyBaseTransferTab } from './tab/transfer-tab'
 import { CrazyBaseOverviewTab } from './tab/overview-tab'

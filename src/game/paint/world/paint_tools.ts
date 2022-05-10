@@ -1,11 +1,90 @@
-import { map } from "jquery";
+import { data, map } from "jquery";
 import { config } from "process";
 import wrap from "word-wrap";
-import { GeoObjectI, VectorI } from "../../common/declarations";
-import { V, vec, Vector } from "../../common/math";
-import { getImage } from "./images";
+import { GeoObjectI, VectorI } from "../../../common/declarations";
+import { roundNumber, V, vec, Vector } from "../../../common/math";
+import { getImage } from "../images";
 import { drawRoundRectangle, paintPoint, setGradiendOrColor } from "./paint_addons";
-import { PaintTransformI } from "./paint_declarations";
+import { PaintTransformI } from "../paint_declarations";
+
+interface OffscreenCanvasI {
+    id: string,
+    data: any,
+    canvas: HTMLCanvasElement
+}
+
+const offscreenCanvasMap = new Map<string, OffscreenCanvasI>()
+
+export function makeOffscreenCanvas<T>(
+    globalGc: CanvasRenderingContext2D,
+    id: string, canvasSize: VectorI, data: T,
+    paintFunc: (gc: CanvasRenderingContext2D, data: T, canvasSize: VectorI) => void,
+    geo: PaintGeoI
+) {
+    if (!offscreenCanvasMap.has(id)) {
+        // create a new canvas
+        var newCanvas = document.createElement('canvas')
+        newCanvas.width = canvasSize.x
+        newCanvas.height = canvasSize.y
+
+        offscreenCanvasMap.set(id, {
+            id: id,
+            canvas: newCanvas,
+            data: null
+        })
+
+        console.log('new canvas created for ' + id)
+    }
+
+    const canvas = offscreenCanvasMap.get(id)!
+
+    if (
+        JSON.stringify(canvas.data) !== JSON.stringify(data) ||
+        canvas.canvas.width !== canvasSize.x ||
+        canvas.canvas.height !== canvasSize.y
+    ) {
+        console.log('canvas for ' + id + ' updating!  ' + canvas.canvas.width + ' vs. ' + canvasSize.x + ' | ' + canvas.canvas.height + ' vs ' + canvasSize.y)
+
+        // override canvas' painting area
+        if (canvas.canvas.width != canvasSize.x) canvas.canvas.width = canvasSize.x
+        if (canvas.canvas.height != canvasSize.y) canvas.canvas.height = canvasSize.y
+
+        const gc = canvas.canvas.getContext('2d')!
+        gc.clearRect(0,0, canvas.canvas.width, canvas.canvas.height)
+        paintFunc(gc, data, canvasSize)
+
+        offscreenCanvasMap.set(id, {
+            ...canvas,
+            data: data
+        })
+    }
+
+    const wholeScaling = geo.transform ? geo.transform.wholeScaling : 1
+
+    transformRect(globalGc, {
+        ...geo, 
+        size: geo.size ? geo.size : vec(
+            canvas.canvas.width / wholeScaling,
+            canvas.canvas.height / wholeScaling
+        ), 
+        ownScaling: geo.size ? geo.ownScaling : 1,
+    }, (gc, pos, size) => {
+        globalGc.drawImage(
+            canvas.canvas, pos.x, pos.y, 
+            size.x, size.y
+        )
+        /*globalGc.lineWidth = 1
+        globalGc.strokeStyle = 'yellow'
+        globalGc.fillStyle = 'white'
+        globalGc.textAlign = 'left'
+        globalGc.textBaseline = 'bottom'
+        globalGc.font = '14px sans-serif'
+
+        globalGc.strokeRect(pos.x, pos.y, size.x, size.y)
+        globalGc.fillText(id, pos.x, pos.y)*/
+    })
+}
+
 
 export type DirectionE = 'top' | 'left' | 'right' | 'bottom'
 
@@ -66,12 +145,14 @@ export interface PaintGeoI {
     paintGeoDebug?: boolean
 }
 
-const PaintGeoDefault: PaintGeoI = {
+export const PaintGeoDefault: PaintGeoI = {
     pos: vec(0,0),
     origin: vec(0.5,0.5),
     size: vec(10,10),
     paintGeoDebug: false
 }
+
+
 
 // Transform
 
@@ -91,16 +172,18 @@ export function sizeString(str: string, size: number) {
 }
 
 export function worldToScreen(pos: VectorI, trans: PaintTransformI) {
-    return V.add(V.mul(V.sub(pos, trans.eye), trans.scaling * trans.unitToPixel), V.half(trans.canvasSize))
+    return V.round(V.add(V.mul(V.sub(pos, trans.eye), trans.scaling * trans.unitToPixel), V.half(trans.canvasSize)))
 }
 export function screenToWorld(pos: VectorI, trans: PaintTransformI) {
     return V.add(V.mul(V.sub(pos, V.half(trans.canvasSize)), 1/(trans.scaling * trans.unitToPixel)), trans.eye)
 }
 
 export function scalingOfGeoObject(config: PaintGeoI) {
-    return config.ownScaling ? config.ownScaling : (
-        config.transform ? (config.partiallyScaling ? 1 + (config.transform!.scaling - 1) * config.partiallyScaling : config.transform!.scaling) : 1
-    )
+    return config.transform ? (
+        config.partiallyScaling
+            ? 1 + (config.transform.scaling - 1) * config.partiallyScaling 
+            : config.transform.scaling
+    ) : (config.ownScaling ? config.ownScaling : 1)
 }
 
 export function transformRect(
@@ -110,21 +193,22 @@ export function transformRect(
 ) {
     const scaling = scalingOfGeoObject(config)
 
-    const size = V.mul(config.size!, scaling * (config.transform ? config.transform.unitToPixel : 1))
+    const size = V.round(V.mul(config.size!, scaling * (config.transform ? config.transform.unitToPixel : 1)))
+
     let pos = config.transform ? worldToScreen(config.pos!, config.transform) : config.pos!
-
     if (config.screenTransform) pos = V.add(pos, config.screenTransform)
+    pos = V.round(pos)
 
-    const useTransform = (config.rotation && config.rotation != 0) || alwaysTranslate === true
+    const useTranslate = (config.rotation && config.rotation != 0) || alwaysTranslate === true
 
-    if (useTransform) {
+    if (useTranslate) {
         gc.save()
         gc.translate(pos.x, pos.y)
         if (config.rotation && config.rotation > 0) gc.rotate(config.rotation)
     }
     
     let relativePosWithCenter = V.mulVec(size, V.negate(config.origin ? config.origin : V.vec(0.5,0.5)))
-    if (useTransform === false) relativePosWithCenter = V.add(relativePosWithCenter, pos)
+    if (useTranslate === false) relativePosWithCenter = V.add(relativePosWithCenter, pos)
 
     callback(gc, relativePosWithCenter, size)
 
@@ -138,7 +222,7 @@ export function transformRect(
         gc.stroke()
     }
 
-    if (useTransform) gc.restore()
+    if (useTranslate) gc.restore()
 }
 
 // Image
@@ -323,6 +407,7 @@ export interface LabelOptionsI extends PaintFontI, PaintBackroundI, PaintGeoI {
     text?: string
     maxTextLength?: number
     gapBetweenLines?: number
+    id?: string
 }
 
 const LabelOptionsDefault: LabelOptionsI = {
@@ -364,15 +449,16 @@ export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
     
     const maxHeight = summedLineHeight + ((lines.length - 1) * gapBetweenLines)
 
-    const transScaling = options.transform ? options.transform.wholeScaling : 1
-
-    options.size = vec(
-        (maxWidth + 2*options.bPadding!.x) / transScaling,
-        (maxHeight + 2*options.bPadding!.y) / transScaling
+    const maxSize = vec(
+        (maxWidth + 2*options.bPadding!.x),
+        (maxHeight + 2*options.bPadding!.y),
+        true
     )
 
-    transformRect(gc, options, (gc, pos, size) => {
-        paintBackroundArea(gc, {...options, pos: pos, size: size})
+    makeOffscreenCanvas(gc, options.id!, maxSize, {
+        text: options.text
+    }, (gc) => {
+        paintBackroundArea(gc, {...options, pos: V.zero(), size: maxSize})
 
         gc.textBaseline = 'top'
         gc.textAlign = 'left'
@@ -382,11 +468,11 @@ export function paintLabel(gc: CanvasRenderingContext2D, opt: LabelOptionsI) {
         for (let i = 0; i < lines.length; i++) {
             gc.fillText(
                 lines[i], 
-                pos.x + options.bPadding!.x,
-                pos.y + options.bPadding!.y + i * (options.fSize! + gapBetweenLines)
+                0 + options.bPadding!.x,
+                roundNumber(0 + options.bPadding!.y + i * (options.fSize! + gapBetweenLines))
             )
         }
-    }, undefined)
+    }, options)
 }
 
 // Table
@@ -398,7 +484,8 @@ export interface TableOptionsI extends PaintFontI, PaintBackroundI, PaintGeoI {
     gapBetweenLines?: number,
     vGap?: number,
     hGap?: number,
-    vfColor?: string
+    vfColor?: string,
+    id?: string,
 }
 
 const TableOptionsDefault: TableOptionsI = {
@@ -420,7 +507,7 @@ const TableOptionsDefault: TableOptionsI = {
     bPadding: vec(8,8),
 }
 
-export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
+export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI, measureParam?: any) {
     const options = {
         ...TableOptionsDefault,
         ...opt
@@ -449,55 +536,66 @@ export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI) {
     })
 
     const mapWidth = longestKey + options.hGap! + longestValue
-    const maxWidth = 2*options.bPadding!.x + (mapWidth > hWidth ? mapWidth : hWidth)
-    const maxHeight = 2*options.bPadding!.y + hfSize + options.valuesMap!.length * (options.fSize! + options.vGap!) + (hvGap - options.vGap!)
 
-    const transScaling = options.transform ? options.transform.wholeScaling : 1
+    const maxWidth = 2*options.bPadding!.x + (mapWidth > hWidth ? mapWidth : hWidth) + 2*options.tickSize!
+    const maxHeight = 2*options.bPadding!.y + hfSize + options.valuesMap!.length * (options.fSize! + options.vGap!) + (hvGap - options.vGap!) + 2*options.tickSize!
 
-    transformRect(gc, {
-        ...options,
-        size: vec(maxWidth / transScaling, maxHeight / transScaling)
-    }, (gc, pos, size) => {
-        paintBackroundArea(gc, {...options, pos: pos, size: size})
+    makeOffscreenCanvas(gc, options.id!, vec(maxWidth, maxHeight, true), {
+        heading: options.heading,
+        valuesMap: options.valuesMap,
+        tickSize: options.tickSize!
+    }, (gc, data, size) => {
+        gc.translate(data.tickSize, data.tickSize)
+        paintBackroundArea(gc, {...options, pos: V.zero(), size: V.sub(size, V.square(data.tickSize*2))})
 
         gc.textBaseline = 'top'
         gc.textAlign = 'left'
-
+    
         gc.fillStyle = options.hfColor!
         gc.font = hFont
-
+    
         gc.fillText(
             options.heading!, 
-            options.bPadding!.x + pos.x,
-            options.bPadding!.y + pos.y
+            options.bPadding!.x,
+            options.bPadding!.y
         )
-
+    
         gc.fillStyle = options.vfColor!
         gc.font = tFont
-
+    
         const mapPos = vec(
-            options.bPadding!.x + pos.x,
-            options.bPadding!.y + hfSize + hvGap + pos.y
+            options.bPadding!.x,
+            options.bPadding!.y + hfSize + hvGap,
+            true
         )
-
+    
+        gc.fillStyle = options.fColor!
         for (let i = 0; i < options.valuesMap!.length; i ++) {
-            const yPos = mapPos.y + i * (options.vGap! + options.fSize!)
-            
-            gc.fillStyle = options.fColor!
+            const yPos = roundNumber(mapPos.y + i * (options.vGap! + options.fSize!))
+    
             gc.fillText(
                 options.valuesMap![i][0], 
                 mapPos.x,
                 yPos
             )
-
-            gc.fillStyle = options.vfColor!
+        }
+    
+        gc.fillStyle = options.vfColor!
+        for (let i = 0; i < options.valuesMap!.length; i ++) {
+            const yPos = roundNumber(mapPos.y + i * (options.vGap! + options.fSize!))
+    
             gc.fillText(
                 options.valuesMap![i][1], 
                 mapPos.x + longestKey + options.hGap!,
                 yPos
             )
         }
-    })
+    }, 
+        {
+            ...options,
+            size: undefined
+        },
+    )
 }
 
 export const ironColors = [

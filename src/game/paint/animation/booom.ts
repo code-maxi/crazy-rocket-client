@@ -1,6 +1,6 @@
 import { V, vec } from "../../../common/math";
 import { VectorI } from "../../../common/declarations"
-import {AnimationObjectI} from "../paint_declarations"
+import {AnimationGamePropsI, AnimationObjectI} from "../paint_declarations"
 
 export interface CircledBooomChildPropsI {
     radius: number
@@ -43,7 +43,7 @@ export class CircledBooomAnimation implements AnimationObjectI {
     private circles: CircledBoomChild[] = []
     private config: CircledBoomConfigI
     private time = 0
-    private killMe: () => void = () => {}
+    private gameProps?: AnimationGamePropsI
 
     constructor(config: CircledBoomConfigI) {
         this.pos = config.pos
@@ -74,17 +74,16 @@ export class CircledBooomAnimation implements AnimationObjectI {
 
     getType() { return 'BOOOM' }
 
-    giveMeTheKnife(knife: () => void) {
-        this.killMe = knife
+    giveMeGameProps(gp: AnimationGamePropsI) {
+        this.gameProps = gp
     }
 
     calc(factor: number) {
-        console.log('develop... ' + this.time)
         this.pos = V.add(this.pos, this.config.velocity ? this.config.velocity : V.zero())
 
         this.circles.forEach(c => c.calc(factor, this.time))
 
-        if (this.time >= this.config.duration) this.killMe()
+        if (this.time >= this.config.duration) this.gameProps!.killMe()
         this.time += factor
     }
 
@@ -94,6 +93,7 @@ export class CircledBooomAnimation implements AnimationObjectI {
             pos: this.pos,
             srPos: V.sub(this.pos, V.square(this.config.radius)),
             srSize: V.square(this.config.radius*2),
+            id: this.gameProps!.id,
             props: {
                 type: 'circled',
                 circles: this.circles.map(c => c.data())

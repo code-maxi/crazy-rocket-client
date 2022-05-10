@@ -104,10 +104,16 @@ export class Geo implements GeoI {
     }
 }
 
-export function vec(x: number, y: number): VectorI {
-    return { x: x, y: y }
+export function roundNumber(n: number) {
+    let rounded = (0.5 + n) | 0;
+    rounded = ~~ (0.5 + n);
+    rounded = (0.5 + n) << 0;
+    return rounded
 }
 
+export function vec(x: number, y: number, round?: boolean): VectorI {
+    return { x: round === true ? roundNumber(x) : x, y: round === true ? roundNumber(y) : y }
+}
     
 export const V = {
     vec(x: number, y: number): VectorI { return { x: x, y: y } },
@@ -124,7 +130,7 @@ export const V = {
     mul(a: VectorI, s: number): VectorI { return { x: a.x*s, y: a.y*s } },
     mulVec(a: VectorI, b: VectorI): VectorI { return { x: a.x*b.x, y: a.y*b.y } },
     divVec(a: VectorI, b: VectorI): VectorI { return { x: a.x/b.x, y: a.y/b.y } },
-    half(v: VectorI): VectorI { return this.mul(v, 0.5) },
+    half(v: VectorI): VectorI { return vec(v.x * 0.5, v.y * 0.5) },
     
     add(a: VectorI, b: VectorI): VectorI { return { x: a.x + b.x, y: a.y + b.y } },
     sub(a: VectorI, b: VectorI): VectorI { return { x: a.x - b.x, y: a.y - b.y } },
@@ -151,6 +157,8 @@ export const V = {
 
     abs(v: VectorI): VectorI { return { x: Math.abs(v.x), y: Math.abs(v.y) } },
     trunc(v: VectorI): VectorI { return { x: Math.trunc(v.x), y: Math.trunc(v.y) } },
+
+    round(v: VectorI) { return vec(roundNumber(v.x), roundNumber(v.y)) },
 
     includesPoint(point: VectorI, pos: VectorI, size: VectorI) {
         const pos2 = this.add(pos, size)

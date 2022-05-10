@@ -1,5 +1,5 @@
-import { CrazyCard, CrazyTableList } from "../../helpers/component-adds";
-import { CrazyBaseStateI } from "../../../decl";
+import { CrazyCard, CrazyTableList } from "../../../helpers/component-adds";
+import { CrazyBaseStateI } from "../../../../decl";
 import { BaseConstructionCanvas, SelectedObjectT } from "../base-construction-canvas";
 import React from "react";
 

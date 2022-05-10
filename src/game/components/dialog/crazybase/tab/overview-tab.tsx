@@ -1,9 +1,9 @@
-import { sumArray } from '../../../other-adds'
+import { sumArray } from '../../../../other-adds'
 import { Col, Container, Row, Stack, Table } from "react-bootstrap"
-import { CrazyBaseStateI, GoodsHelper } from "../../../decl"
+import { CrazyBaseStateI, GoodsHelper } from "../../../../decl"
 import React from 'react';
-import { CrazyPieChart } from "../../helpers/crazy-charts"
-import { Alert, CrazyTableList } from '../../helpers/component-adds';
+import { CrazyPieChart } from "../../../helpers/crazy-charts"
+import { Alert, CrazyTableList } from '../../../helpers/component-adds';
 import { BaseConstructionCanvas } from '../base-construction-canvas';
 
 interface PieDataI {

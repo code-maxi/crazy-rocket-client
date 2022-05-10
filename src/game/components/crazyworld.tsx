@@ -1,10 +1,12 @@
 import React from "react";
 import { MessagePanel } from "./chat/message-panel"
+import { CrazyChatModule } from "./chat/chat-module"
 import { BaseExtensionTypeE, CrazyBaseStateI, CrazyGoodE, MessageDataI, MessageVariantTypeE, RocketTypeE } from "../decl";
 import { RocketCanvas } from "./canvas";
 import { CrazyBackdrops } from "./crazy_backdrops"
 import { Button } from "react-bootstrap";
 import { CircledBooomAnimation } from "../paint/animation/booom"
+import { RIPAnimation } from "../paint/animation/rip"
 import { vec } from "../../common/math";
 
 export interface CrazyWorldState {
@@ -12,7 +14,10 @@ export interface CrazyWorldState {
     showBaseDialog: boolean,
     messages: [MessageDataI, boolean][],
     messageBoxHeight: number,
-    userId: string
+    userId: string,
+    typeMessageState: 'to-all' | 'to-me' | null
+    currentMessage: string,
+    cursorFromMessagePanelOn: boolean
 }
 
 export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
@@ -211,19 +216,100 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                     dangerIcon: false
                 }, true]
             ],
-            messageBoxHeight: 400
+            messageBoxHeight: 400,
+            currentMessage: '',
+            typeMessageState: null,
+            cursorFromMessagePanelOn: false
         }
+
         CrazyWorld.instance = this
     }
 
-    addMessages(messages: MessageDataI[]) {
+    sendMessage() {
+        if (this.state.currentMessage && this.state.currentMessage !== '') {
+            // TODO handle message
+
+            console.log('send message ' + this.state.typeMessageState)
+
+            this.setState({
+                ...this.addMessagesNewState([
+                    {
+                        text: this.state.currentMessage,
+                        ownerId: 'u1',
+                        ownerName: 'Meeri-Fan',
+                        type: MessageVariantTypeE.SUCCESS,
+                        dangerIcon: false
+                    }
+                ]),
+                typeMessageState: null,
+                currentMessage: ''
+            })
+        }
+    }
+
+    cancelMessage() {
         this.setState({
+            ...this.state,
+            typeMessageState: null,
+            currentMessage: ''
+        })
+    }
+
+    componentDidMount() {
+        setInterval(() => {
+            if (this.state.typeMessageState) this.setState({
+                ...this.state,
+                cursorFromMessagePanelOn: !this.state.cursorFromMessagePanelOn
+            })
+        }, 500)
+
+        const exceptionKeys = ['!','?',',','.','-','>','<','ß','"',':',' ']
+
+        document.addEventListener('keydown', k => {
+            if (this.state.typeMessageState !== null) {
+                if (k.code === 'Enter') this.sendMessage()
+
+                else if ((this.state.typeMessageState === 'to-all' || this.state.currentMessage === '') &&  k.code === 'Escape') this.cancelMessage()
+
+                else if (k.code === 'Backspace') {
+                    this.setState({
+                        ...this.state,
+                        currentMessage: this.state.currentMessage.substring(
+                            0, this.state.currentMessage.length-1
+                        )
+                    })
+                }
+
+                else if ((!k.shiftKey && !k.ctrlKey && k.code.includes('Key')) || exceptionKeys.includes(k.key)) this.setState({
+                    ...this.state,
+                    currentMessage: this.state.currentMessage + k.key.toUpperCase()
+                })
+            }
+            else {
+                if (k.shiftKey && !k.altKey && k.code === 'KeyC') this.setState({
+                    ...this.state,
+                    typeMessageState: 'to-me',
+                })
+                if (!k.shiftKey &&  k.altKey && k.code === 'KeyC') this.setState({
+                    ...this.state,
+                    typeMessageState: 'to-all',
+                })
+            }
+        })
+    }
+
+    addMessages(messages: MessageDataI[]) {
+        this.setState(this.addMessagesNewState(messages))
+    }
+
+    addMessagesNewState(messages: MessageDataI[]) {
+        return {
             ...this.state,
             messages: [
                 ...this.state.messages.map(o => [o[0], false] as [MessageDataI, boolean]),
                 ...messages.map(m => [m, true] as [MessageDataI, boolean])
             ]
-        })
+        }
     }
 
     private removeLastMessages(n: number) {
@@ -278,6 +364,17 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                 >
                     Add a Booom
                 </Button>
+
+                <Button
+                    onClick={() => {
+                        RocketCanvas.instance.addAnimation(new RIPAnimation(
+                            vec(2,-1),
+                            'User XmP died'
+                        ))
+                    }}
+                >
+                    Add a R.I.P
+                </Button>
             </div>
 
             <MessagePanel 
@@ -296,6 +393,18 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                 size="150px"
                 color="rgba(0,0,0,0.7)"
                 zIndex={2}
+            />
+
+            <CrazyChatModule
+                cursorOn={this.state.cursorFromMessagePanelOn}
+                message={this.state.currentMessage}
+                sendMode={this.state.typeMessageState}
+                onCanelClicked={() => this.cancelMessage()}
+                onFinishClicked={() => this.sendMessage()}
+                onSelectSendMode={k => this.setState({
+                    ...this.state,
+                    typeMessageState: k
+                })}
             />
         </div>
     }

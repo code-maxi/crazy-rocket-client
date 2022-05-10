@@ -1,16 +1,19 @@
-import { AsteroidPropsI, BasePropsI, GameObjectPaintDataI, PaintTransformI, PlanetPropsI } from "./paint_declarations";
-import { V, vec, Vector } from "../../common/math";
-import { DirectionE, followingTooltipCircular, paintCircledShaddow, paintImage, paintIronBar, paintIronCircle, paintLabel, paintProcessBar, paintTable, rectRectCollision, screenToWorld, transformRect, worldToScreen } from "./paint_tools"
-import { getImage } from "./images";
-import { BaseExtensionTypeE } from "../decl";
-import { CircledBooomAnimationPropsI } from "./animation/booom"
-import { drawRoundRectangle } from "./paint_addons";
+import { CrazyAsteroidPropsI, CrazyBasePropsI, GameObjectPaintDataI, PaintTransformI, CrazyPlanetPropsI } from "../paint_declarations";
+import { V, vec } from "../../../common/math";
+import { followingTooltipCircular, paintCircledShaddow, PaintGeoDefault, PaintGeoI, paintImage, paintIronBar, paintIronCircle, paintLabel, paintProcessBar, paintTable, rectRectCollision, screenToWorld, TableOptionsI, transformRect, makeOffscreenCanvas, worldToScreen } from "./paint_tools"
+import { getImage } from "../images";
+import { BaseExtensionTypeE } from "../../decl";
+import { CircledBooomAnimationPropsI } from "../animation/booom"
+import { VectorI } from "../../../common/declarations";
 
-export interface PaintFunctionI {
+
+
+// ------
+
+interface PaintFunctionI {
     zIndex: number, 
     paintFunc: (data: GameObjectPaintDataI, gc: CanvasRenderingContext2D, trans: PaintTransformI) => void 
 }
-
 
 export function paintObject(data: GameObjectPaintDataI, gc: CanvasRenderingContext2D, index: number, trans: PaintTransformI) {
     const o = paintHelpers.get(data.type)
@@ -18,23 +21,30 @@ export function paintObject(data: GameObjectPaintDataI, gc: CanvasRenderingConte
 }
 
 export function paintObjectsSorted(objects: GameObjectPaintDataI[], gc: CanvasRenderingContext2D, trans: PaintTransformI) {
-    let listOfPaintFuncs: {zIndex: number, index: number, data: GameObjectPaintDataI}[] = []
+    let listOfPaintFuncs: {zIndex: number, paintFunc: () => void}[] = []
+
     objects.forEach(data => {
         const fncs = paintHelpers.get(data.type)
-        if (fncs) fncs.forEach((it, i) => 
+
+        if (fncs) fncs.forEach((it) => 
             listOfPaintFuncs.push({
                 zIndex: it.zIndex,
-                index: i,
-                data: data
+                paintFunc: () => it.paintFunc(data, gc, trans)
             })
         )
     })
-    listOfPaintFuncs.sort(f => f.zIndex)
 
-    listOfPaintFuncs.forEach(f => {
-        const fncs = paintHelpers.get(f.data.type)!
-        fncs[f.index]!.paintFunc(f.data, gc, trans)
-    })
+    listOfPaintFuncs.sort((a,b) => a.zIndex - b.zIndex).forEach(f => f.paintFunc())
+}
+
+export function checkIfObjectTouchesScreen(obj: GameObjectPaintDataI, trans: PaintTransformI) {
+    let touches: boolean | null = null
+    if (obj.srPos && obj.srSize) {
+        const spos = worldToScreen(obj.srPos, trans)
+        const ssize = V.mul(obj.srSize, trans.wholeScaling)
+        touches = rectRectCollision(spos, ssize, V.zero(), trans.canvasSize)
+    }
+    return touches
 }
 
 const paintHelpers = new Map<
@@ -42,7 +52,7 @@ const paintHelpers = new Map<
     PaintFunctionI[]
 >([
     ['BACKGRUOND', [{
-        zIndex: -10, paintFunc: (data, gc, trans) => {
+        zIndex: -3, paintFunc: (data, gc, trans) => {
             const eye = trans.eye
             let x = -eye.x/4.0
             let y = -eye.y/4.0
@@ -111,8 +121,9 @@ const paintHelpers = new Map<
             di(0, 0)
         }
     }]],
-    ['ASTEROID', [{ zIndex: 0, paintFunc: (data, gc, trans) => {
-        const castedData = data.props as AsteroidPropsI
+
+    ['ASTEROID', [{ zIndex: 1, paintFunc: (data, gc, trans) => {
+        const castedData = data.props as CrazyAsteroidPropsI
 
         /*paintImage(gc, {
             src: 'red-shaddow-point.png',
@@ -159,7 +170,7 @@ const paintHelpers = new Map<
             tickDirection: 'bottom'
         })*/
 
-        paintTable(gc,  {
+        /*paintTable(gc,  {
             heading: 'Das Meerschwein',
             valuesMap: [
                 ['Bubität', 'sehr hoch'],
@@ -177,14 +188,14 @@ const paintHelpers = new Map<
             bPadding: vec(8,8),
             tickDirection: 'top',
             transform: trans
-        })
+        })*/
     }}]],
 
     ['PLANET', [
         {
-            zIndex: -1,
+            zIndex: 1,
             paintFunc: (data, gc, trans) => {
-                const castedData = data.props as PlanetPropsI
+                const castedData = data.props as CrazyPlanetPropsI
                 
                 paintImage(gc, {
                     src: castedData.img,
@@ -201,7 +212,8 @@ const paintHelpers = new Map<
                     valuesMap: castedData.tableValues,
                     tickDirection: followingTooltip.tickDirection,
                     transform: trans,
-                    pos: followingTooltip.pos
+                    pos: followingTooltip.pos,
+                    id: data.id+'_tooltip'
                 })
 
                 const hidingByPixelRadius = [
@@ -209,13 +221,13 @@ const paintHelpers = new Map<
                     300
                 ]
 
-                castedData.cities.forEach((c,i) => {
-                    const cityPos = V.add(data.pos, V.mul(c.relPosToPlanet, castedData.radius*2 / 100))
-                    const srPos = V.sub(cityPos, V.square(c.size/2))
+                castedData.cities.forEach((city,i) => {
+                    const cityPos = V.add(data.pos, V.mul(city.relPosToPlanet, castedData.radius*2 / 100))
+                    const srPos = V.sub(cityPos, V.square(city.size/2))
                     
                     const touches = rectRectCollision(
                         worldToScreen(srPos, trans), 
-                        V.square(c.size * trans.wholeScaling), 
+                        V.square(city.size * trans.wholeScaling), 
                         V.zero(),
                         trans.canvasSize
                     )
@@ -224,11 +236,11 @@ const paintHelpers = new Map<
                         const cityPosScreen = worldToScreen(cityPos, trans)
                         const distanceToEyeInPx = V.distance(cityPos, trans.eye) * trans.wholeScaling
 
-                        paintCircledShaddow(gc, 'rgba(0,0,0,0.5)', cityPosScreen, 0, c.size * 1.2 * trans.wholeScaling)
+                        paintCircledShaddow(gc, 'rgba(0,0,0,0.5)', cityPosScreen, 0, city.size * 1.2 * trans.wholeScaling)
 
                         paintImage(gc, {
                             src: 'game/city.png',
-                            size: V.square(c.size),
+                            size: V.square(city.size),
                             pos: cityPos,
                             transform: trans
                         })
@@ -238,13 +250,14 @@ const paintHelpers = new Map<
                         )) : 1
 
                         if (gc.globalAlpha > 0) paintTable(gc, {
-                            heading: c.name,
-                            valuesMap: c.tableValues,
+                            heading: city.name,
+                            valuesMap: city.tableValues,
                             tickDirection: 'top',
                             transform: trans,
-                            pos: V.addY(cityPos, c.size/2),
+                            pos: V.addY(cityPos, city.size/2),
                             screenTransform: vec(0,20),
-                            origin: vec(0.5,0)
+                            origin: vec(0.5,0),
+                            id: data.id + '_' + city.name + '_city_tooltip'
                         })
 
                         gc.globalAlpha = 1
@@ -256,74 +269,81 @@ const paintHelpers = new Map<
 
     ['BASE', [
         {
-            zIndex: -1,
-            paintFunc: (data, gc, trans) => {
-                const castedData = data.props as BasePropsI
+            zIndex: 2,
+            paintFunc: (data, gcGlobal, trans) => {
+                const castedData = data.props as CrazyBasePropsI
 
-                if (castedData.outerRingRadius !== null) {
-                    transformRect(gc, {
-                        pos: data.pos,
-                        size: V.square(castedData.outerRingRadius!),
-                        transform: trans,
-                        rotation: 0.00,
-                        origin: V.zero()
-                    }, (gc, pos, size) => {
-                        
-                        if (castedData.interceptionRadius !== null) {
-                            const r1 = castedData.outerRingRadius! * trans.wholeScaling
-                            const r2 = castedData.interceptionRadius! * trans.wholeScaling
+                if (castedData.outerRingRadius) {
+                    const maxRadius = castedData.interceptionRadius ? castedData.interceptionRadius : castedData.outerRingRadius
+                    
+                    const scaling = 2
+                    const wholeScaling = trans.unitToPixel * scaling
+
+                    makeOffscreenCanvas(gcGlobal, data.id + '_background', V.square(wholeScaling * maxRadius * 2), {
+                        extensions: castedData.extensions,
+                        outerRingRadius: castedData.outerRingRadius,
+                        enterZoneRadius: castedData.enterZoneRadius,
+                        interceptionRadius: castedData.interceptionRadius,
+                        tableValues: castedData.tableValues
+                    }, (gc, data, size) => {
+                        gc.save()
+                        gc.translate(size.x/2, size.y/2)
+
+                        if (data.interceptionRadius !== null) {
+                            const r1 = data.outerRingRadius * wholeScaling
+                            const r2 = data.interceptionRadius * wholeScaling
                             
                             const teamColor = castedData.teamColor.toLowerCase()
-
+    
                             let color = '255,0,0'
                             if (teamColor === 'green') color = '0,255,0'
                             if (teamColor === 'blue') color = '0,50,255'
                             if (teamColor === 'yellow') color = '150,150,0'
-
-                            paintCircledShaddow(gc, 'rgba('+color+',0.4)', pos, r1, r2)
+    
+                            paintCircledShaddow(gc, 'rgba('+color+',0.4)', V.zero(), r1, r2)
                         }
-
-                        const rt1 = V.al(Math.PI/4 - Math.PI/2, castedData.enterZoneRadius * 0.9 * trans.scaling * trans.unitToPixel)
-                        const rt2 = V.al(Math.PI/10 - Math.PI/2, castedData.outerRingRadius! * trans.scaling * trans.unitToPixel)
-
-                        gc.lineWidth = 15 * trans.scaling
-
+    
+                        const rt1 = V.al(Math.PI/4 - Math.PI/2, castedData.enterZoneRadius * 0.9 * wholeScaling)
+                        const rt2 = V.al(Math.PI/10 - Math.PI/2, castedData.outerRingRadius! * wholeScaling)
+    
+                        gc.lineWidth = 15 * scaling
+    
                         paintIronBar(gc, rt1, V.mirrorX(rt2))
                         paintIronBar(gc, V.mirrorX(rt1), (rt2))
-
+    
                         paintIronBar(gc, V.mirrorY(rt1), V.negate(rt2))
                         paintIronBar(gc, V.negate(rt1), V.mirrorY(rt2))
 
-                        gc.lineWidth = 24 * trans.scaling
-                        
-                        paintIronCircle(gc, pos, size.x)
-
-                        gc.save()
+                        gc.lineWidth = 24 * scaling
+                        paintIronCircle(gc, V.zero(), castedData.outerRingRadius! * wholeScaling)
+    
                         castedData.extensions.forEach((e,i) => {
                             const last = castedData.extensions[i-1]
                             gc.rotate((last ? (e.place - last.place) : e.place) * (Math.PI / 180))
-
+    
                             const extensionPos = vec(
-                                -castedData.extensionWidth / 2 * trans.wholeScaling,
-                                (-castedData.outerRingRadius! * 1.05) * trans.wholeScaling
+                                -castedData.extensionWidth / 2 * wholeScaling,
+                                (-castedData.outerRingRadius! * 1.05) * wholeScaling
                             )
-
+    
                             const image = getImage(e.type === BaseExtensionTypeE.CARGO_AREA ? 'game/base-cargo-extension.png' : 'game/base-human-extension.png')
+    
+                            console.log('extension ' + e + ' image: ' + image)
 
                             gc.drawImage(
                                 image, 
                                 extensionPos.x, extensionPos.y, 
-                                castedData.extensionWidth * trans.wholeScaling,
-                                castedData.extensionWidth * trans.wholeScaling
+                                castedData.extensionWidth * wholeScaling,
+                                castedData.extensionWidth * wholeScaling
                             )
-
+    
                             if (e.stability < 95) {
                                 paintProcessBar(gc, {
                                     value: e.stability,
                                     size: vec(castedData.extensionWidth/3, 0.25),
-                                    pos: vec(0, extensionPos.y),
-                                    ownScaling: trans.scaling * trans.unitToPixel,
-                                    screenTransform: vec(0,-10),
+                                    pos: vec(0, extensionPos.y + 0),
+                                    ownScaling: wholeScaling,
+                                    screenTransform: vec(0,-100),
                                     fColor2: 'rgb(100,255,0)',
                                     fColor1: 'rgb(255,100,0)',
                                     borderColor: 'black',
@@ -332,34 +352,53 @@ const paintHelpers = new Map<
                             }
                         })
                         gc.restore()
-                    }, true)
+
+                        /*gc.strokeStyle = 'red'
+                        gc.lineWidth = 4
+                        gc.beginPath()
+                        gc.arc(size.x / 2, size.y / 2, size.x/2, 0, Math.PI*2)
+
+                        gc.stroke()*/
+                    }, {
+                        pos: data.pos,
+                        size: V.square(maxRadius),
+                        transform: trans,
+                        //rotation: castedData.outerRingRotation ? castedData.outerRingRotation : undefined
+                    })
                 }
             }
         },
         {
             zIndex: 10,
-            paintFunc: (data, gc, trans) => {
-                const castedData = data.props as BasePropsI
+            paintFunc: (data, globalGc, trans) => {
+                const castedData = data.props as CrazyBasePropsI
 
-                transformRect(gc, {
-                    pos: data.pos,
-                    size: V.square(castedData.enterZoneRadius*2),
-                    transform: trans
-                }, (gc, pos, size) => {
-                    gc.drawImage(getImage('game/base-enter-zone-'+(castedData.teamColor).toLowerCase()+'.png'), pos.x, pos.y, size.x, size.y)
-                    const middle = V.add(pos, V.half(size))
+                const scaling = 2
+                const wholeScaling = trans.unitToPixel * scaling
 
-                    gc.font = '200 '+(30 * trans.scaling)+'px ethnocentric'
+                makeOffscreenCanvas(globalGc, data.id + '_enterzone', V.square(wholeScaling * castedData.enterZoneRadius), {
+                    name: castedData.name,
+                    teamColor: castedData.teamColor
+                }, (gc, data, size) => {
+                    gc.drawImage(getImage('game/base-enter-zone-'+(data.teamColor).toLowerCase()+'.png'), 0, 0, size.x, size.y)
+                    
+                    const middle = V.half(size)
+
+                    gc.font = '200 '+(30 * scaling)+'px ethnocentric'
                     gc.textAlign = 'center'
 
                     gc.textBaseline = 'bottom'
                     gc.fillStyle = 'white'
                     gc.fillText('BASE', middle.x, middle.y - 15)
                     
-                    gc.font = '400 '+(50 * trans.scaling)+'px ethnocentric'
+                    gc.font = '400 '+(50 * scaling)+'px ethnocentric'
                     gc.textBaseline = 'top'
                     gc.fillStyle = 'lightyellow'
                     gc.fillText(castedData.name, middle.x, middle.y)
+                }, {
+                    pos: data.pos,
+                    size: V.square(castedData.enterZoneRadius),
+                    transform: trans,
                 })
 
                 const eyeBaseDelta = V.sub(trans.eye, data.pos)
@@ -367,7 +406,7 @@ const paintHelpers = new Map<
                 const radius = castedData.outerRingRadius && !isDistanceSmall ? (castedData.outerRingRadius*1.2) : (castedData.enterZoneRadius*1.3)
                 const followingTooltip = followingTooltipCircular(data.pos, radius, trans)
 
-                paintTable(gc, {
+                paintTable(globalGc, {
                     heading: 'BASE ' + castedData.name,
                     valuesMap: castedData.tableValues,
                     fColor: 'white',
@@ -380,7 +419,8 @@ const paintHelpers = new Map<
                     bPadding: vec(8,8),
                     tickDirection: followingTooltip.tickDirection,
                     transform: trans,
-                    pos: followingTooltip.pos
+                    pos: followingTooltip.pos,
+                    id: data.id + '_tooltip'
                 })
             }
         }
@@ -388,9 +428,9 @@ const paintHelpers = new Map<
 
     ['BOOOM', [
         {
-            zIndex: -1,
+            zIndex: 10,
             paintFunc: (data, gc, trans) => {
-                if (data.props.type === 'circled') {
+                if (data.props.type === 'circled' && checkIfObjectTouchesScreen(data, trans)) {
                     const castedProps = data.props as CircledBooomAnimationPropsI
 
                     /*
@@ -407,7 +447,7 @@ const paintHelpers = new Map<
 
                         gc.fillStyle = c.color
                         gc.beginPath()
-                        
+
                         gc.arc(
                             cScreenPos.x, cScreenPos.y, 
                             c.radius * trans.wholeScaling, 
@@ -415,6 +455,43 @@ const paintHelpers = new Map<
                         )
                         gc.fill()
                     })
+                }
+            }
+        }
+    ]],
+
+    ['RIP', [
+        {
+            zIndex: 2,
+            paintFunc: (data, gc, trans) => {
+                if (checkIfObjectTouchesScreen(data, trans)) {
+                    gc.globalAlpha = data.props.opacity
+
+                    const imageSize = data.props.scaling * data.props.ICON_SIZE
+
+                    paintImage(gc, {
+                        size: V.square(imageSize),
+                        pos: data.pos,
+                        src: 'game/crossbones.png',
+                        transform: trans
+                    })
+
+                    const bottomOfImg = V.addY(worldToScreen(data.pos, trans), imageSize / 2 * trans.wholeScaling)
+                    
+                    gc.textBaseline = 'top'
+                    gc.textAlign = 'center'
+
+                    const prmFs = (data.props.PRM_FONT_SIZE * trans.scaling * data.props.scaling)
+
+                    gc.font = '' + prmFs + 'px sans-serif'
+                    gc.fillStyle = data.props.PRM_FONT_COLOR
+                    gc.fillText(data.props.primaryText, bottomOfImg.x, bottomOfImg.y)
+
+                    gc.font = (data.props.SCNR_FONT_SIZE * trans.scaling * data.props.scaling) + 'px sans-serif'
+                    gc.fillStyle = data.props.SCNR_FONT_COLOR
+                    gc.fillText(data.props.secondaryText, bottomOfImg.x, bottomOfImg.y + prmFs * 1.5)
+
+                    gc.globalAlpha = 1
                 }
             }
         }

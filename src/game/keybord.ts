@@ -1,4 +1,5 @@
 export const keys = new Map<string, boolean>()
+
 export function keysArray() {
     let ka: { key: string, active: boolean }[] = []
     keys.forEach((v, k) => ka.push({ key: k, active: v }))

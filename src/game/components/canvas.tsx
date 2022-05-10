@@ -3,10 +3,10 @@ import { keyListen } from "../keybord";
 import { MapConfig, rocketMapHelper } from "./map";
 import { V, vec } from "../../common/math";
 import { AnimationObjectI, GameObjectPaintDataI, PaintGameWorldI, PaintTransformI } from "../paint/paint_declarations"
-import { paintObject, paintObjectsSorted } from "../paint/paint_helpers"
+import { paintObject, paintObjectsSorted } from "../paint/world/paint_helpers"
 import { ClientMouseI, VectorI } from "../../common/declarations";
-import { drawRoundRectangle, paintPoint } from "../paint/paint_addons";
-import { screenToWorld, worldToScreen } from "../paint/paint_tools";
+import { drawRoundRectangle, paintPoint } from "../paint/world/paint_addons";
+import { screenToWorld, worldToScreen } from "../paint/world/paint_tools";
 import { getImage } from "../paint/images";
 import { debugWorld } from "../..";
 
@@ -23,6 +23,7 @@ export class RocketCanvas extends React.Component<{}, {
     private worldData?: PaintGameWorldI
 
     private clientAnimations: AnimationObjectI[] = []
+    private clientAnimationCounter = 0
 
     private transform: PaintTransformI = {
         eye: V.zero(),
@@ -54,12 +55,14 @@ export class RocketCanvas extends React.Component<{}, {
 
     addAnimation(ani: AnimationObjectI) {
         this.clientAnimations.push(ani)
-        ani.giveMeTheKnife(() => {
-            const index = this.clientAnimations.indexOf(ani, 0)
-            this.clientAnimations.splice(index, 1)
-            console.log('Animation killed! ' + ani.getType())
+        ani.giveMeGameProps({
+            killMe: () => {
+                const index = this.clientAnimations.indexOf(ani, 0)
+                this.clientAnimations.splice(index, 1)
+            },
+            id: 'animation_' + ani.getType() + '_' + this.clientAnimationCounter
         })
-        console.log('Animation added! ' + ani.getType())
+        this.clientAnimationCounter ++
     }
 
     private init() {
@@ -72,17 +75,12 @@ export class RocketCanvas extends React.Component<{}, {
                     pos: screenToWorld(vec(evt.clientX, evt.clientY), this.transform)
                 }
     
-                if (this.mouse.bPressed === 0) {
-                    console.log('B1 pressed and moved.')
-    
+                if (this.mouse.bPressed === 0) {    
                     if (this.mouse) {
                         const newEye = V.add(V.mul(V.sub( 
                             this.lastMousePosition,
                             vec(evt.clientX, evt.clientY)
                         ), 1/(this.transform.scaling * this.transform.unitToPixel)), this.lastEye)
-
-                        console.log('Eye changed...')
-                        console.log()
         
                         this.transform = {
                             ...this.transform,
@@ -101,10 +99,6 @@ export class RocketCanvas extends React.Component<{}, {
                 }
             }
 
-            console.log('Mouse clicked...')
-            console.log(this.mouse)
-            console.log()
-
             if (this.mouse) {
                 this.lastMousePosition = {...vec(evt.clientX, evt.clientY)}
                 this.lastEye = {...this.transform.eye}
@@ -118,18 +112,10 @@ export class RocketCanvas extends React.Component<{}, {
                     bPressed: null
                 }
             }
-
-            console.log('Mouse released...')
-            console.log(this.mouse)
-            console.log()
         }
 
         this.canvasRef!.onmouseleave = (evt: MouseEvent) => {
             this.mouse = null
-
-            console.log('Mouse left screen...')
-            console.log(this.mouse)
-            console.log()
         }
 
         this.canvasRef!.onmouseenter = (evt: MouseEvent) => {
@@ -137,10 +123,6 @@ export class RocketCanvas extends React.Component<{}, {
                 pos: screenToWorld(vec(evt.screenX, evt.screenY), this.transform),
                 bPressed: null
             }
-
-            console.log('Mouse left screen...')
-            console.log(this.mouse)
-            console.log()
         }
 
         this.canvasRef!.onwheel = (evt: WheelEvent) => {
@@ -148,10 +130,6 @@ export class RocketCanvas extends React.Component<{}, {
                 ...this.transform,
                 scaling: (this.transform.scaling - (evt.deltaY/1000))
             }
-
-            console.log('Mouse left screen...')
-            console.log(this.transform, evt.y)
-            console.log()
         }
 
         const setSizes = () => {
@@ -200,6 +178,7 @@ export class RocketCanvas extends React.Component<{}, {
             const objects: GameObjectPaintDataI[] = [
                 {
                     type: 'BACKGRUOND',
+                    id: 'background',
                     pos: V.zero(),
                     srPos: null,
                     srSize: null,
@@ -215,21 +194,7 @@ export class RocketCanvas extends React.Component<{}, {
             paintObjectsSorted(objects, gc, this.transform)
         }
 
-
-        if (this.inPaintLoop) setTimeout(() => requestAnimationFrame(() => this.paint()), 10)
-
-        /*g.fillStyle = "black"
-        g.fillRect(0.0, 0.0, canvasWidth, canvasHeight)
-
-        const drawErrorImage = () => {
-            const niSize = V.mul(canvasSize, 0.4)
-            const niPos = V.sub(V.half(canvasSize), V.half(niSize))
-            g.drawImage(
-                getImage('noimage.png'), 
-                niPos.x, niPos.y, 
-                niSize.x, niSize.y
-            )
-        }*/
+        if (this.inPaintLoop) setTimeout(() => requestAnimationFrame(() => this.paint()), 2)
     }
 
     componentDidMount() {
@@ -237,7 +202,6 @@ export class RocketCanvas extends React.Component<{}, {
     }
 
     render() {
-        console.log('render: ' + this.state.width + ' ' + this.state.height)
         const w = this.state.width
         const h = this.state.height
         return <canvas

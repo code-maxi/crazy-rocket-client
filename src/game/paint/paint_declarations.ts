@@ -9,25 +9,25 @@ export interface PaintTransformI {
     unitToPixel: number
 }
 
-export interface AsteroidPropsI {
+export interface CrazyAsteroidPropsI {
     radius: number,
     stability: number,
     rotation: number
 }
 
-export interface BasePropsExtensionI {
+export interface CrazyBasePropsExtensionI {
     place: number, // in degrees: (0 - 360)
     type: BaseExtensionTypeE,
     stability: number // in %: (0 - 100)
 }
 
-export interface BasePropsI {
+export interface CrazyBasePropsI {
     name: string,
     enterZoneRadius: number,
     outerRingRadius: number | null,
     outerRingRotation: number | null,
     interceptionRadius: number | null,
-    extensions: BasePropsExtensionI[],
+    extensions: CrazyBasePropsExtensionI[],
     extensionWidth: number,
     tableValues: [string, string][],
     teamColor: string
@@ -35,37 +35,30 @@ export interface BasePropsI {
 
 // Planet
 
-export interface PlanetCityI {
+export interface CrazyPlanetCityI {
     tableValues: [string, string][],
     size: number,
     name: string,
     relPosToPlanet: VectorI // in (%,%)
 }
 
-export interface PlanetConfigI {
-    temperature: number, // in degrees
-    atmosphere: boolean,
-    gravitation: number, // in G
-}
-
-export interface PlanetPropsI {
+export interface CrazyPlanetPropsI {
     radius: number,
     name: string,
     img: string,
     rotation: number
     tableValues: [string, string][],
-    cities: PlanetCityI[],
+    cities: CrazyPlanetCityI[],
 }
 
 //
 
-
-
 export interface GameObjectPaintDataI {
     type: string
     pos: VectorI
-    props: any,
-    srPos: VectorI | null,
+    props: any
+    id: string
+    srPos: VectorI | null
     srSize: VectorI | null
 }
 
@@ -78,9 +71,14 @@ export interface PaintGameWorldI {
     factor: number
 }
 
+export interface AnimationGamePropsI {
+    id: string,
+    killMe: () => void
+}
+
 export interface AnimationObjectI {
     data: () => GameObjectPaintDataI
     calc: (factor: number) => void
-    giveMeTheKnife: (knife: () => void) => void
+    giveMeGameProps: (gameProps: AnimationGamePropsI) => void
     getType(): string
 }

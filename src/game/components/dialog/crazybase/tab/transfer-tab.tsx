@@ -1,9 +1,9 @@
 import Button from 'react-bootstrap/Button'
 import Stack from 'react-bootstrap/Stack'
 import React from "react";
-import { CrazyGoodE, GoodsContainerI } from "../../../decl";
+import { CrazyGoodE, GoodsContainerI } from "../../../../decl";
 import { Badge, Spinner } from 'react-bootstrap'
-import { getFromArrayMap } from '../../../../common/adds'
+import { getFromArrayMap } from '../../../../../common/adds'
 
 export function CrazyBaseTransferTab(props: {
     visible: boolean,
