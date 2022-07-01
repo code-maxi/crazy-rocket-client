@@ -7,7 +7,11 @@ import { CrazyBackdrops } from "./crazy_backdrops"
 import { Button } from "react-bootstrap";
 import { CircledBooomAnimation } from "../paint/animation/booom"
 import { RIPAnimation } from "../paint/animation/rip"
-import { vec } from "../../common/math";
+import { V, vec } from "../../common/math";
+import { AnimationObjectI, PaintCrazyWorldI } from "../paint/paint_declarations";
+import {CrazyMouseEventComponent} from "./mouse_event_component"
+import { ClientMouseI, VectorI } from "../../common/declarations";
+import { screenToWorld } from "../paint/paint_tools";
 
 export interface CrazyWorldState {
     showedBaseData?: CrazyBaseStateI
@@ -22,6 +26,11 @@ export interface CrazyWorldState {
 
 export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
     static instance: CrazyWorld
+
+    private clientAnimations: AnimationObjectI[] = []
+    private clientAnimationCounter = 0
+
+    clientMouse?: ClientMouseI
 
     constructor(a: any) {
         super(a)
@@ -298,6 +307,18 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
         })
     }
 
+    addAnimation(ani: AnimationObjectI) {
+        this.clientAnimations.push(ani)
+        ani.giveMeGameProps({
+            killMe: () => {
+                const index = this.clientAnimations.indexOf(ani, 0)
+                this.clientAnimations.splice(index, 1)
+            },
+            id: 'animation_' + ani.getType() + '_' + this.clientAnimationCounter
+        })
+        this.clientAnimationCounter ++
+    }
+
     addMessages(messages: MessageDataI[]) {
         this.setState(this.addMessagesNewState(messages))
     }
@@ -321,9 +342,16 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
         })
     }
 
+    onWorldData(world: PaintCrazyWorldI) {
+        
+    }
+
     render(): React.ReactNode {
         return <div id="crazy-world-gui">
-            <RocketCanvas />
+            <RocketCanvas
+                zIndex={0}
+                onMouseChange={(pos) => this.clientMouse = pos}
+            />
 
             <div className="d-inline-flex flex-row fixed-bottom">
                 <Button
@@ -387,6 +415,7 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                         console.log('Too much messages!')
                     }
                 }}
+                zIndex={1}
             />
 
             <CrazyBackdrops
@@ -405,6 +434,7 @@ export class CrazyWorld extends React.Component<{}, CrazyWorldState> {
                     ...this.state,
                     typeMessageState: k
                 })}
+                zIndex={5}
             />
         </div>
     }

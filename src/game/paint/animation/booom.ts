@@ -34,6 +34,7 @@ export interface CircledBoomConfigI {
     duration: number,
     velocity?: VectorI,
     radiusFac?: number,
+    prmColorIndex: number,
     colors: string[],
     revealRadiusFac?: number
 }
@@ -44,12 +45,29 @@ export class CircledBooomAnimation implements AnimationObjectI {
     private config: CircledBoomConfigI
     private time = 0
     private gameProps?: AnimationGamePropsI
+    private mainChild: CircledBoomChild
 
     constructor(config: CircledBoomConfigI) {
         this.pos = config.pos
         this.config = config
         
         const sd = this.config.duration * 0.9
+
+        this.mainChild = new CircledBoomChild(
+            {
+                maxRadius: this.config.radius,
+                maxDistance: 0,
+                eVector: V.zero(),
+                creatingPos: V.zero(),
+                revealTime: 0,
+                hideTime: this.config.duration * 0.4,
+                killTime: this.config.duration * 0.9,
+                startOpacity: 0.2,
+                color: this.config.colors[this.config.prmColorIndex]
+            },
+            () => {}
+        )
+
         for (let i = 0; i < config.depth; i ++) {
             const ev = V.al(Math.random()*2*Math.PI, 1)
             this.circles.push(new CircledBoomChild(
@@ -81,6 +99,7 @@ export class CircledBooomAnimation implements AnimationObjectI {
     calc(factor: number) {
         this.pos = V.add(this.pos, this.config.velocity ? this.config.velocity : V.zero())
 
+        this.mainChild.calc(factor, this.time)
         this.circles.forEach(c => c.calc(factor, this.time))
 
         if (this.time >= this.config.duration) this.gameProps!.killMe()
@@ -96,7 +115,8 @@ export class CircledBooomAnimation implements AnimationObjectI {
             id: this.gameProps!.id,
             props: {
                 type: 'circled',
-                circles: this.circles.map(c => c.data())
+                circles: this.circles.map(c => c.data()),
+                mainChild: this.mainChild.data()
             }
         }
     }

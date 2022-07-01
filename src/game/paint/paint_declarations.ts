@@ -9,10 +9,9 @@ export interface PaintTransformI {
     unitToPixel: number
 }
 
-export interface CrazyAsteroidPropsI {
-    radius: number,
-    stability: number,
-    rotation: number
+export interface PaintFunctionI {
+    zIndex: number, 
+    paintFunc: (data: GameObjectPaintDataI, gc: CanvasRenderingContext2D, trans: PaintTransformI) => void 
 }
 
 export interface CrazyBasePropsExtensionI {
@@ -62,8 +61,14 @@ export interface GameObjectPaintDataI {
     srSize: VectorI | null
 }
 
-export interface PaintGameWorldI {
+export interface GameMapConfigI {
+    viewExpanse: VectorI
+}
+
+export interface PaintCrazyWorldI {
     objects: GameObjectPaintDataI[], 
+    mapConfig: GameMapConfigI,
+    unitToPixel: number,
     eye: VectorI,
     scaling: number,
     width: number,

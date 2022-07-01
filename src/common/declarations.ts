@@ -188,7 +188,8 @@ export interface GameStartI {
 }
 
 export interface ClientMouseI {
-    pos: VectorI
+    pos: VectorI | null
+    clientPos: VectorI | null
     bPressed: number | null
 }
 

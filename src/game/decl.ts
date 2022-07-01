@@ -1,5 +1,6 @@
 import { getFromArrayMap } from "../common/adds"
 import { sumArray } from "./other-adds"
+import { PaintCrazyWorldI } from "./paint/paint_declarations"
 
 export enum CrazyGoodE {
     FOOD = "FOOD",
@@ -108,7 +109,6 @@ export interface RocketOnBoardI {
 }
 
 export interface CrazyBaseStateI {
-    usersOnBoard: string[],
     goods: GoodsContainerI,
     human: HumanContainerI,
     extensions: BaseExtensionI[],
@@ -161,13 +161,27 @@ export interface CrazyUserI {
 export interface CrazyTeamStateI {
     color: string,
     recuedPeople: number,
-    users: CrazyUserI,
+    users: CrazyUserI[],
     baseStates: CrazyBaseStateI[]
 }
 
-export interface CrazyRocketState {
+export interface CrazyRocketStateI {
     weight: number,
     speedInKmH: number,
     goods: number,
     human: HumanContainerI
+}
+
+// ----------
+
+export interface StateCrazyWorldDataI {
+    teamStates: [string, CrazyTeamStateI][]
+    rocketState: CrazyRocketStateI | null
+    dialogStates: []
+}
+
+export interface WholeCrazyWorldDataI {
+    myUser: CrazyUserI
+    paint: PaintCrazyWorldI
+    state: StateCrazyWorldDataI
 }

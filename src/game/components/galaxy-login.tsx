@@ -18,11 +18,11 @@ import { ButtonGroup, Collapse, OverlayTrigger, Tooltip } from 'react-bootstrap'
 const copy = require('clipboard-copy')
 
 export interface GalaxyLoginStateI {
-    galaxy?: GalaxyI,
-    error?: {
+    galaxy: GalaxyI | null,
+    error: {
         message: string | null,
         type: string
-    },
+    } | null,
     myUser?: UserPropsI,
     passwordFieldOpen: boolean,
     passwordValue: string,
@@ -46,7 +46,7 @@ export class GalaxyLogin extends React.Component<GalaxyLoginPropsI, GalaxyLoginS
             error: this.props.noGalaxySpecifyed ? {
                 message: "There is no galaxy specified as URL-Parameter.",
                 type: "no-galaxy-specified"
-            } : undefined,
+            } : null,
             passwordFieldOpen: false,
             passwordValue: '',
             nameValue: this.props.name ? this.props.name : '',

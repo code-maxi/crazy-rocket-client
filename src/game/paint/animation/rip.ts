@@ -9,8 +9,8 @@ export const RIPConsts = {
     FADING_OUT_DURATION: 30,
     START_SCALING: 0.9,
     END_SCALING: 0.3,
-    PRM_FONT_SIZE: 20,
-    SCNR_FONT_SIZE: 15,
+    PRM_FONT_SIZE: 40,
+    SCNR_FONT_SIZE: 20,
     PRM_FONT_COLOR: 'lightyellow',
     SCNR_FONT_COLOR: 'grey'
 }

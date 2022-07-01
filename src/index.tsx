@@ -5,41 +5,13 @@ import './css/style.scss'
 import { SocketUser } from './game/network/socket-user';
 import { GalaxyRootGUI } from "./game/components/root-gui"
 import { loadImages } from './game/paint/images';
-import { PaintGameWorldI, CrazyPlanetPropsI } from './game/paint/paint_declarations';
+import { PaintCrazyWorldI, CrazyPlanetPropsI } from './game/paint/paint_declarations';
 import { V, vec } from './common/math';
-import { worldToScreen } from './game/paint/world/paint_tools';
 import { BaseExtensionTypeE } from './game/decl';
 import { forIch } from './game/other-adds';
+import { keyListen } from './game/keybord';
 
-/*
-<SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
-<SnackbarContainer vertical="bottom" horizontal="right" id="confirm" />
-<RocketCanvas />
-*/
-
-//init()
-
-/*ReactDOM.render(
-  <React.StrictMode>
-    <SnackbarContainer vertical="bottom" horizontal="left" id="alert" />
-    <SnackbarContainer vertical="bottom" horizontal="right" id="confirm" />
-    <RocketCanvas />
-    <RocketMap classes="main-map" width={300} factor={0.5} borderColor="rgba(0,0,0,0)" />
-  </React.StrictMode>,
-  document.getElementById('root')
-)*/
-
-/*ReactDOM.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<WebSite />} />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>,
-  document.getElementById('root')
-)*/
-//test
+keyListen()
 
 loadImages([
     'asteroid.png',
@@ -99,14 +71,14 @@ const planetData: CrazyPlanetPropsI = {
   })),
 }
 
-export const debugWorld: PaintGameWorldI = {
+export const debugWorld: PaintCrazyWorldI = {
   factor: 1,
   objects: [
     {
       id: 'base_1',
       type: 'BASE',
-      srPos: vec(5,5),
-      srSize: vec(10,10),
+      srPos: null,
+      srSize: null,
       pos: vec(10,10),
       props: {
         name: 'XIq',
@@ -133,15 +105,15 @@ export const debugWorld: PaintGameWorldI = {
     {
       id: 'base_2',
       type: 'BASE',
-      srPos: vec(5,5),
-      srSize: vec(10,10),
+      srPos: null,
+      srSize: null,
       pos: vec(35,10),
       props: {
         name: 'uQP',
         enterZoneRadius: 4,
         outerRingRadius: 8,
         outerRingRotation: 1.4,
-        interceptionRadius: 14,
+        interceptionRadius: null,
         extensions: forIch(6, i => ({
           place: 360*(i/6),
           type: i % 2 === 0 ? BaseExtensionTypeE.HUMAN_AREA : BaseExtensionTypeE.CARGO_AREA,

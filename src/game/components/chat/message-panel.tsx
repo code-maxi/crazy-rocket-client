@@ -1,12 +1,14 @@
 import React, { useEffect } from "react"
 import { Collapse } from "react-bootstrap"
 import { MessageDataI } from "../../decl"
+import { paintProcessBar } from "../../paint/paint_tools"
 
 export function MessagePanel(props: {
     massages: [MessageDataI, boolean][],
     transitionDuration: number,
     messageBoxHeight: number,
-    onEffecDone: () => void
+    onEffecDone: () => void,
+    zIndex: number
 }) {
     React.useEffect(() => {
         setTimeout(() => {
@@ -17,7 +19,7 @@ export function MessagePanel(props: {
 
     return <div 
             style={{
-                zIndex: 1,
+                zIndex: props.zIndex,
                 position: 'fixed',
                 left: '50vw',
                 bottom: 'calc(100vh - '+(viewHeight)+'px)',

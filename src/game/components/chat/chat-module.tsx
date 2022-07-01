@@ -12,13 +12,14 @@ export function CrazyChatModule(props: {
     cursorOn: boolean,
     onCanelClicked: () => void,
     onFinishClicked: () => void,
-    onSelectSendMode: (p: 'to-all' | 'to-me') => void
+    onSelectSendMode: (p: 'to-all' | 'to-me') => void,
+    zIndex: number
 }) {
     return  <div style={{
         position: 'fixed',
         bottom: '10px',
         left: '0',
-        zIndex: 2000
+        zIndex: props.zIndex
     }} className="d-flex w-100 justify-content-center align-items-center">
         {
             !props.sendMode ? <ButtonGroup className="shadow-lg">

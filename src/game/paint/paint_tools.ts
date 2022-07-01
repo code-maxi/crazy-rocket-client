@@ -1,11 +1,9 @@
-import { data, map } from "jquery";
-import { config } from "process";
 import wrap from "word-wrap";
-import { GeoObjectI, VectorI } from "../../../common/declarations";
-import { roundNumber, V, vec, Vector } from "../../../common/math";
-import { getImage } from "../images";
+import { VectorI } from "../../common/declarations";
+import { roundNumber, V, vec } from "../../common/math";
+import { getImage } from "./images";
 import { drawRoundRectangle, paintPoint, setGradiendOrColor } from "./paint_addons";
-import { PaintTransformI } from "../paint_declarations";
+import { PaintTransformI } from "./paint_declarations";
 
 interface OffscreenCanvasI {
     id: string,
@@ -18,14 +16,16 @@ const offscreenCanvasMap = new Map<string, OffscreenCanvasI>()
 export function makeOffscreenCanvas<T>(
     globalGc: CanvasRenderingContext2D,
     id: string, canvasSize: VectorI, data: T,
-    paintFunc: (gc: CanvasRenderingContext2D, data: T, canvasSize: VectorI) => void,
-    geo: PaintGeoI
+    paintFunc: (gc: CanvasRenderingContext2D, data: T, canvasSize: VectorI, scaling: number) => void,
+    geo: PaintGeoI, scaling?: number, dabugPaint?: boolean
 ) {
+    const newCanvasSize = V.round(scaling ? V.mul(canvasSize, scaling) : canvasSize)
+
     if (!offscreenCanvasMap.has(id)) {
         // create a new canvas
         var newCanvas = document.createElement('canvas')
-        newCanvas.width = canvasSize.x
-        newCanvas.height = canvasSize.y
+        newCanvas.width = newCanvasSize.x
+        newCanvas.height = newCanvasSize.y
 
         offscreenCanvasMap.set(id, {
             id: id,
@@ -40,18 +40,18 @@ export function makeOffscreenCanvas<T>(
 
     if (
         JSON.stringify(canvas.data) !== JSON.stringify(data) ||
-        canvas.canvas.width !== canvasSize.x ||
-        canvas.canvas.height !== canvasSize.y
+        canvas.canvas.width !== newCanvasSize.x ||
+        canvas.canvas.height !== newCanvasSize.y
     ) {
         console.log('canvas for ' + id + ' updating!  ' + canvas.canvas.width + ' vs. ' + canvasSize.x + ' | ' + canvas.canvas.height + ' vs ' + canvasSize.y)
 
         // override canvas' painting area
-        if (canvas.canvas.width != canvasSize.x) canvas.canvas.width = canvasSize.x
-        if (canvas.canvas.height != canvasSize.y) canvas.canvas.height = canvasSize.y
+        if (canvas.canvas.width !== newCanvasSize.x) canvas.canvas.width = newCanvasSize.x
+        if (canvas.canvas.height !== newCanvasSize.y) canvas.canvas.height = newCanvasSize.y
 
         const gc = canvas.canvas.getContext('2d')!
         gc.clearRect(0,0, canvas.canvas.width, canvas.canvas.height)
-        paintFunc(gc, data, canvasSize)
+        paintFunc(gc, data, newCanvasSize, scaling ? scaling : 1)
 
         offscreenCanvasMap.set(id, {
             ...canvas,
@@ -59,30 +59,27 @@ export function makeOffscreenCanvas<T>(
         })
     }
 
-    const wholeScaling = geo.transform ? geo.transform.wholeScaling : 1
-
     transformRect(globalGc, {
         ...geo, 
-        size: geo.size ? geo.size : vec(
-            canvas.canvas.width / wholeScaling,
-            canvas.canvas.height / wholeScaling
-        ), 
+        size: geo.size ? geo.size : vec(canvas.canvas.width, canvas.canvas.height),
         ownScaling: geo.size ? geo.ownScaling : 1,
     }, (gc, pos, size) => {
-        globalGc.drawImage(
+        gc.drawImage(
             canvas.canvas, pos.x, pos.y, 
             size.x, size.y
         )
-        /*globalGc.lineWidth = 1
-        globalGc.strokeStyle = 'yellow'
-        globalGc.fillStyle = 'white'
-        globalGc.textAlign = 'left'
-        globalGc.textBaseline = 'bottom'
-        globalGc.font = '14px sans-serif'
+        if (dabugPaint === true) {
+            globalGc.lineWidth = 1
+            globalGc.strokeStyle = 'yellow'
+            globalGc.fillStyle = 'white'
+            globalGc.textAlign = 'left'
+            globalGc.textBaseline = 'bottom'
+            globalGc.font = '14px sans-serif'
 
-        globalGc.strokeRect(pos.x, pos.y, size.x, size.y)
-        globalGc.fillText(id, pos.x, pos.y)*/
-    })
+            globalGc.strokeRect(pos.x, pos.y, size.x, size.y)
+            globalGc.fillText(id, pos.x, pos.y)
+        }
+    }, undefined, false)
 }
 
 
@@ -148,7 +145,6 @@ export interface PaintGeoI {
 export const PaintGeoDefault: PaintGeoI = {
     pos: vec(0,0),
     origin: vec(0.5,0.5),
-    size: vec(10,10),
     paintGeoDebug: false
 }
 
@@ -189,11 +185,12 @@ export function scalingOfGeoObject(config: PaintGeoI) {
 export function transformRect(
     gc: CanvasRenderingContext2D, config: PaintGeoI, 
     callback: (gc: CanvasRenderingContext2D, pos: VectorI, size: VectorI) => void,
-    alwaysTranslate?: boolean
+    alwaysTranslate?: boolean,
+    doUseUnitToPixel?: boolean
 ) {
     const scaling = scalingOfGeoObject(config)
 
-    const size = V.round(V.mul(config.size!, scaling * (config.transform ? config.transform.unitToPixel : 1)))
+    const size = V.round(V.mul(config.size!, scaling * (config.transform && doUseUnitToPixel !== false ? config.transform.unitToPixel : 1)))
 
     let pos = config.transform ? worldToScreen(config.pos!, config.transform) : config.pos!
     if (config.screenTransform) pos = V.add(pos, config.screenTransform)
@@ -543,8 +540,11 @@ export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI, mea
     makeOffscreenCanvas(gc, options.id!, vec(maxWidth, maxHeight, true), {
         heading: options.heading,
         valuesMap: options.valuesMap,
-        tickSize: options.tickSize!
+        tickSize: options.tickSize!,
+        tickDirection: options.tickDirection
     }, (gc, data, size) => {
+        gc.save()
+
         gc.translate(data.tickSize, data.tickSize)
         paintBackroundArea(gc, {...options, pos: V.zero(), size: V.sub(size, V.square(data.tickSize*2))})
 
@@ -590,6 +590,8 @@ export function paintTable(gc: CanvasRenderingContext2D, opt: TableOptionsI, mea
                 yPos
             )
         }
+
+        gc.restore()
     }, 
         {
             ...options,

@@ -1,16 +1,19 @@
 import React from "react";
 import { keyListen } from "../keybord";
-import { MapConfig, rocketMapHelper } from "./map";
+import { MapConfig } from "./map";
 import { V, vec } from "../../common/math";
-import { AnimationObjectI, GameObjectPaintDataI, PaintGameWorldI, PaintTransformI } from "../paint/paint_declarations"
-import { paintObject, paintObjectsSorted } from "../paint/world/paint_helpers"
+import { AnimationObjectI, GameObjectPaintDataI, PaintCrazyWorldI, PaintTransformI } from "../paint/paint_declarations"
+import { paintObjectsSorted } from "../paint/paint_helpers"
 import { ClientMouseI, VectorI } from "../../common/declarations";
-import { drawRoundRectangle, paintPoint } from "../paint/world/paint_addons";
-import { screenToWorld, worldToScreen } from "../paint/world/paint_tools";
-import { getImage } from "../paint/images";
+import { screenToWorld } from "../paint/paint_tools";
 import { debugWorld } from "../..";
+import { CrazyMouseEventComponent } from "./mouse_event_component";
 
-export class RocketCanvas extends React.Component<{}, {
+export class RocketCanvas extends React.Component<{
+    zIndex: number,
+    onMouseChange: (clientMouse: ClientMouseI) => void,
+    onViewChange?: (eye?: VectorI, scaling?: number) => void
+}, {
     width: number,
     height: number
 }, {}> {
@@ -19,29 +22,18 @@ export class RocketCanvas extends React.Component<{}, {
     private canvasRef: HTMLCanvasElement | null = null
     private refF = (e: HTMLCanvasElement | null) => { this.canvasRef = e }
     private inPaintLoop = false
-    
-    private worldData?: PaintGameWorldI
-
-    private clientAnimations: AnimationObjectI[] = []
-    private clientAnimationCounter = 0
-
-    private transform: PaintTransformI = {
-        eye: V.zero(),
-        scaling: 1.0,
-        unitToPixel: 50.0,
-        canvasSize: V.zero(),
-        wholeScaling: 0
-    }
 
     private lastEye: VectorI = vec(0,0)
     private lastMousePosition: VectorI = vec(0,0)
-    private mouse: ClientMouseI | null = null
-
-    mapConfig: MapConfig = {
-        width: 300,
-        factor: 0.5,
-        nameUnderRocket: true
+    private mouse: ClientMouseI = {
+        pos: null,
+        clientPos: null,
+        bPressed: null
     }
+    
+    private worldData?: PaintCrazyWorldI
+
+    private viewTransform?: PaintTransformI
 
     constructor(props: any) {
         super(props)
@@ -52,86 +44,8 @@ export class RocketCanvas extends React.Component<{}, {
         RocketCanvas.instance = this
         console.log("CANVAS INITIALIZED")
     }
-
-    addAnimation(ani: AnimationObjectI) {
-        this.clientAnimations.push(ani)
-        ani.giveMeGameProps({
-            killMe: () => {
-                const index = this.clientAnimations.indexOf(ani, 0)
-                this.clientAnimations.splice(index, 1)
-            },
-            id: 'animation_' + ani.getType() + '_' + this.clientAnimationCounter
-        })
-        this.clientAnimationCounter ++
-    }
-
-    private init() {
-        keyListen()
-
-        this.canvasRef!.onmousemove = (evt: MouseEvent) => {
-            if (this.mouse) {
-                this.mouse = {
-                    ...this.mouse,
-                    pos: screenToWorld(vec(evt.clientX, evt.clientY), this.transform)
-                }
     
-                if (this.mouse.bPressed === 0) {    
-                    if (this.mouse) {
-                        const newEye = V.add(V.mul(V.sub( 
-                            this.lastMousePosition,
-                            vec(evt.clientX, evt.clientY)
-                        ), 1/(this.transform.scaling * this.transform.unitToPixel)), this.lastEye)
-        
-                        this.transform = {
-                            ...this.transform,
-                            eye: newEye
-                        }
-                    }
-                }
-            }
-        }
-
-        this.canvasRef!.onmousedown = (evt: MouseEvent) => {
-            if (this.mouse) {
-                this.mouse = {
-                    ...this.mouse,
-                    bPressed: evt.button
-                }
-            }
-
-            if (this.mouse) {
-                this.lastMousePosition = {...vec(evt.clientX, evt.clientY)}
-                this.lastEye = {...this.transform.eye}
-            }
-        }
-
-        this.canvasRef!.onmouseup = (evt: MouseEvent) => {
-            if (this.mouse) {
-                this.mouse = {
-                    ...this.mouse,
-                    bPressed: null
-                }
-            }
-        }
-
-        this.canvasRef!.onmouseleave = (evt: MouseEvent) => {
-            this.mouse = null
-        }
-
-        this.canvasRef!.onmouseenter = (evt: MouseEvent) => {
-            this.mouse = {
-                pos: screenToWorld(vec(evt.screenX, evt.screenY), this.transform),
-                bPressed: null
-            }
-        }
-
-        this.canvasRef!.onwheel = (evt: WheelEvent) => {
-            this.transform = {
-                ...this.transform,
-                scaling: (this.transform.scaling - (evt.deltaY/1000))
-            }
-        }
-
+    private init() {
         const setSizes = () => {
             const p = $(document.body).get(0)
 
@@ -156,6 +70,10 @@ export class RocketCanvas extends React.Component<{}, {
     stopPaintLoop() { this.inPaintLoop = false }
     startPaintLoop() { this.inPaintLoop = true; this.paint() }
 
+    onData(world: PaintCrazyWorldI) {
+        this.worldData = world
+    }
+
     paint() {
         const canvas = this.canvasRef
 
@@ -167,13 +85,13 @@ export class RocketCanvas extends React.Component<{}, {
 
             gc.clearRect(0,0, canvasSize.x, canvasSize.y)
 
-            this.transform = {
-                ...this.transform,
+            this.viewTransform = {
+                eye: currentWorld.eye,
+                scaling: currentWorld.scaling,
+                unitToPixel: currentWorld.unitToPixel,
                 canvasSize: canvasSize,
-                wholeScaling: this.transform.scaling * this.transform.unitToPixel
+                wholeScaling: currentWorld.scaling * currentWorld.unitToPixel
             }
-
-            this.clientAnimations.forEach(ani => ani.calc(currentWorld.factor))
 
             const objects: GameObjectPaintDataI[] = [
                 {
@@ -187,27 +105,107 @@ export class RocketCanvas extends React.Component<{}, {
                         height: currentWorld.height
                     }
                 },
-                ...this.clientAnimations.map(ani => ani.data()),
                 ...currentWorld.objects
             ]
 
-            paintObjectsSorted(objects, gc, this.transform)
+            paintObjectsSorted(objects, gc, this.viewTransform, 'world')
         }
 
-        if (this.inPaintLoop) setTimeout(() => requestAnimationFrame(() => this.paint()), 2)
+        if (this.inPaintLoop) 
+            setTimeout(() => requestAnimationFrame(() => this.paint()), 2)
     }
 
     componentDidMount() {
         this.init()
+        this.props.onMouseChange(this.mouse)
     }
 
     render() {
         const w = this.state.width
         const h = this.state.height
-        return <canvas
-            ref={ this.refF } 
-            width={ w } 
-            height={ h }
-            id='crazy-canvas'></canvas>
+        return <React.Fragment>
+            <canvas
+                ref={ this.refF } 
+                width={ w } 
+                height={ h }
+                style={{
+                    position: 'fixed',
+                    left: 0,
+                    top: 0,
+                    zIndex: this.props.zIndex
+                }} />
+
+            <CrazyMouseEventComponent 
+                onmousemove={(evt: MouseEvent) => {
+                    if (this.mouse && this.viewTransform) {
+                        const cPos = vec(evt.clientX, evt.clientY)
+
+                        this.props.onMouseChange({
+                            ...this.mouse,
+                            clientPos: cPos,
+                            pos: screenToWorld(cPos, this.viewTransform)
+                        })
+            
+                        if (this.props.onViewChange && this.mouse.bPressed === 0) {    
+                            if (this.mouse) {
+                                const newEye = V.add(V.mul(V.sub( 
+                                    this.lastMousePosition,
+                                    vec(evt.clientX, evt.clientY)
+                                ), 1/(this.viewTransform.scaling * this.viewTransform.unitToPixel)), this.lastEye)
+                
+                                this.props.onViewChange(
+                                    newEye, undefined
+                                )
+                            }
+                        }
+                    }
+                }}
+                onmousedown={(evt: MouseEvent) => {
+                    if (this.mouse) {
+                        this.props.onMouseChange({
+                            ...this.mouse,
+                            bPressed: evt.button
+                        })
+                    }
+        
+                    if (this.props.onViewChange && this.mouse && this.viewTransform) {
+                        this.lastMousePosition = {...vec(evt.clientX, evt.clientY)}
+                        this.lastEye = {...this.viewTransform.eye}
+                    }
+                }}
+                onmouseup={(_: MouseEvent) => {
+                    if (this.mouse) {
+                        this.props.onMouseChange({
+                            ...this.mouse,
+                            bPressed: null
+                        })
+                    }
+                }}
+                onmouseleave={(_: MouseEvent) => {
+                    this.props.onMouseChange({
+                        ...this.mouse,
+                        pos: null,
+                        clientPos: null
+                    })
+                }}
+                onmouseenter={(evt: MouseEvent) => {
+                    if (this.props.onViewChange &&this.viewTransform) {
+                        const cPos = vec(evt.screenX, evt.screenY)
+                        this.props.onMouseChange({
+                            pos: screenToWorld(cPos, this.viewTransform),
+                            clientPos: cPos,
+                            bPressed: null
+                        })
+                    }
+                }}
+                onwheel={(evt: WheelEvent) => {
+                    if (this.props.onViewChange && this.viewTransform) {
+                        this.props.onViewChange(
+                            undefined, (this.viewTransform.scaling - (evt.deltaY/1000))
+                        )
+                    }
+                }}
+            />
+        </React.Fragment>
     }
 }

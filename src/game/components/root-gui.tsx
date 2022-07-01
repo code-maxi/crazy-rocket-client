@@ -1,6 +1,6 @@
 import React from "react";
 import { debugGame } from "../..";
-import { PaintGameWorldI } from "../paint/paint_declarations";
+import { PaintCrazyWorldI } from "../paint/paint_declarations";
 import { CrazyWorld } from "./crazyworld";
 import { GalaxyLogin, GalaxyLoginPropsI } from "./galaxy-login"
 
@@ -9,7 +9,7 @@ interface GalaxyRootStateI {
 }
 
 interface GalaxyRootGUIPropsI extends GalaxyLoginPropsI {
-    debugWorld?: PaintGameWorldI
+    debugWorld?: PaintCrazyWorldI
 }
 
 export class GalaxyRootGUI extends React.Component<GalaxyRootGUIPropsI, GalaxyRootStateI> {
